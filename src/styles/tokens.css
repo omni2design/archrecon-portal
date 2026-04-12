@@ -1,0 +1,218 @@
+/**
+ * ArchRecon design tokens — synced from Figma variable collection "ArchRecon Collection".
+ * Naming: Figma path `color/primary/500` → `--ar-color-primary-500`.
+ * Semantic tokens use var() to mirror Figma variable aliases.
+ */
+
+:root {
+  /* ─── Primitive colors: accent ─────────────────────────────────────────── */
+  --ar-color-accent-25: rgb(255 248 252);
+  --ar-color-accent-50: rgb(255 235 246);
+  --ar-color-accent-100: rgb(255 212 237);
+  --ar-color-accent-200: rgb(255 167 217);
+  --ar-color-accent-300: rgb(244 3 139);
+  --ar-color-accent-400: rgb(205 0 116);
+  --ar-color-accent-500: rgb(154 0 87);
+  --ar-color-accent-600: rgb(102 0 54);
+  --ar-color-accent-700: rgb(47 0 26);
+
+  /* ─── Primitive colors: neutral ────────────────────────────────────────── */
+  --ar-color-neutral-0: rgb(255 255 255);
+  --ar-color-neutral-0-50: rgb(255 255 255 / 0.5);
+  --ar-color-neutral-50: rgb(245 245 245);
+  --ar-color-neutral-100: rgb(232 232 232);
+  --ar-color-neutral-200: rgb(214 214 214);
+  --ar-color-neutral-300: rgb(191 191 191);
+  --ar-color-neutral-400: rgb(153 153 153);
+  --ar-color-neutral-500: rgb(139 139 139);
+  --ar-color-neutral-600: rgb(111 111 111);
+  --ar-color-neutral-700: rgb(77 77 77);
+  --ar-color-neutral-800: rgb(51 51 51);
+  --ar-color-neutral-900: rgb(0 0 0);
+  --ar-color-neutral-900-0: rgb(0 0 0 / 0);
+  --ar-color-neutral-900-20: rgb(0 0 0 / 0.2);
+  --ar-color-neutral-900-50: rgb(0 0 0 / 0.5);
+
+  /* ─── Primitive colors: primary ────────────────────────────────────────── */
+  --ar-color-primary-25: rgb(250 253 255);
+  --ar-color-primary-50: rgb(239 247 255);
+  --ar-color-primary-75: rgb(222 237 250);
+  --ar-color-primary-100: rgb(154 205 255);
+  --ar-color-primary-200: rgb(20 138 255);
+  --ar-color-primary-300: rgb(0 120 239);
+  --ar-color-primary-400: rgb(0 104 208);
+  --ar-color-primary-500: rgb(0 83 167);
+  --ar-color-primary-600: rgb(0 60 121);
+  --ar-color-primary-700: rgb(0 41 82);
+  --ar-color-primary-800: rgb(0 22 45);
+  --ar-color-primary-900: rgb(16 16 57);
+
+  /* ─── State colors ─────────────────────────────────────────────────────── */
+  --ar-color-state-error: rgb(220 40 40);
+  --ar-color-state-warning: rgb(217 119 6);
+  --ar-color-state-success-bg: rgb(31 173 117);
+  --ar-color-state-success-boarder: rgb(232 247 241);
+  --ar-color-state-success-text: rgb(19 121 91);
+  --ar-color-state-in-progess-bg: var(--ar-color-accent-400);
+  --ar-color-state-in-progess-boarder: var(--ar-color-accent-50);
+  --ar-color-state-in-progess-text: var(--ar-color-accent-700);
+  --ar-color-state-info-bg: var(--ar-color-primary-500);
+  --ar-color-state-info-boarder: var(--ar-color-primary-50);
+  --ar-color-state-info-text: var(--ar-color-primary-700);
+
+  /* ─── Semantic: background ─────────────────────────────────────────────── */
+  --ar-color-semantic-background-brand: var(--ar-color-primary-500);
+  --ar-color-semantic-background-brand-faint: var(--ar-color-primary-50);
+  --ar-color-semantic-background-brand-soft: var(--ar-color-primary-100);
+  --ar-color-semantic-background-brand-strong: var(--ar-color-primary-800);
+  --ar-color-semantic-background-brand-subtle: var(--ar-color-primary-75);
+  --ar-color-semantic-background-card: var(--ar-color-neutral-0);
+  --ar-color-semantic-background-card-hover: var(--ar-color-neutral-50);
+  --ar-color-semantic-background-card-inverse: var(--ar-color-primary-800);
+  --ar-color-semantic-background-default: var(--ar-color-neutral-0);
+  --ar-color-semantic-background-elevated: var(--ar-color-neutral-0);
+  --ar-color-semantic-background-inverse: var(--ar-color-primary-900);
+  --ar-color-semantic-background-subtle: var(--ar-color-neutral-100);
+
+  /* ─── Semantic: border ─────────────────────────────────────────────────── */
+  --ar-color-semantic-border-default: var(--ar-color-neutral-300);
+  --ar-color-semantic-border-disabled: var(--ar-color-neutral-200);
+  --ar-color-semantic-border-error: var(--ar-color-semantic-state-error);
+  --ar-color-semantic-border-focus: var(--ar-color-primary-600);
+  --ar-color-semantic-border-strong: var(--ar-color-neutral-400);
+  --ar-color-semantic-border-subtle: var(--ar-color-neutral-200);
+  --ar-color-semantic-border-success: var(--ar-color-semantic-state-success);
+
+  /* ─── Semantic: button ───────────────────────────────────────────────────── */
+  --ar-color-semantic-button-disabled: var(--ar-color-neutral-200);
+  --ar-color-semantic-button-disabled-boarder: var(--ar-color-neutral-900-50);
+  --ar-color-semantic-button-disabled-text: var(--ar-color-neutral-600);
+  --ar-color-semantic-button-primary: var(--ar-color-accent-300);
+  --ar-color-semantic-button-primary-boarder: var(--ar-color-neutral-0-50);
+  --ar-color-semantic-button-primary-hover: var(--ar-color-accent-200);
+  --ar-color-semantic-button-primary-text: var(--ar-color-accent-25);
+  --ar-color-semantic-button-primary-text-hover: var(--ar-color-accent-700);
+  --ar-color-semantic-button-secondary: var(--ar-color-primary-600);
+  --ar-color-semantic-button-secondary-boarder: var(--ar-color-neutral-0-50);
+  --ar-color-semantic-button-secondary-hover: var(--ar-color-primary-100);
+  --ar-color-semantic-button-secondary-tex-hover: var(--ar-color-primary-800);
+  --ar-color-semantic-button-secondary-text: var(--ar-color-primary-25);
+  --ar-color-semantic-button-tertiary: var(--ar-color-neutral-0);
+  --ar-color-semantic-button-tertiary-boarder: var(--ar-color-neutral-900-50);
+  --ar-color-semantic-button-tertiary-hover: var(--ar-color-primary-800);
+  --ar-color-semantic-button-tertiary-text: var(--ar-color-primary-800);
+  --ar-color-semantic-button-tertiary-text-hover: var(--ar-color-primary-75);
+
+  /* ─── Semantic: icon ─────────────────────────────────────────────────────── */
+  --ar-color-semantic-icon-hover: var(--ar-color-primary-500);
+  --ar-color-semantic-icon-outline: var(--ar-color-neutral-0);
+  --ar-color-semantic-icon-outline-boarder: var(--ar-color-neutral-900-50);
+  --ar-color-semantic-icon-outline-hover: var(--ar-color-neutral-0);
+  --ar-color-semantic-icon-outline-text: var(--ar-color-neutral-900);
+  --ar-color-semantic-icon-primary: var(--ar-color-primary-800);
+  --ar-color-semantic-icon-text: var(--ar-color-primary-25);
+
+  /* ─── Semantic: state ────────────────────────────────────────────────────── */
+  --ar-color-semantic-state-error: var(--ar-color-state-error);
+  --ar-color-semantic-state-in-progress: var(--ar-color-state-in-progess-bg);
+  --ar-color-semantic-state-info: var(--ar-color-state-info-bg);
+  --ar-color-semantic-state-success: var(--ar-color-state-success-bg);
+  --ar-color-semantic-state-warning: var(--ar-color-state-warning);
+
+  /* ─── Semantic: text ─────────────────────────────────────────────────────── */
+  --ar-color-semantic-text-disabled: var(--ar-color-neutral-300);
+  --ar-color-semantic-text-inverse: var(--ar-color-neutral-0);
+  --ar-color-semantic-text-link: var(--ar-color-primary-500);
+  --ar-color-semantic-text-link-hover: var(--ar-color-primary-600);
+  --ar-color-semantic-text-muted: var(--ar-color-neutral-400);
+  --ar-color-semantic-text-primary: var(--ar-color-neutral-900);
+  --ar-color-semantic-text-secondary: var(--ar-color-neutral-600);
+
+  /* Font stacks are set in globals.css (next/font + Nasalization fallback). */
+
+  /* ─── Typography: size (px) ──────────────────────────────────────────────── */
+  --ar-font-size-3xs: 12px;
+  --ar-font-size-2xs: 14px;
+  --ar-font-size-xs: 16px;
+  --ar-font-size-sm: 18px;
+  --ar-font-size-m: 20px;
+  --ar-font-size-lg: 24px;
+  --ar-font-size-xl: 28px;
+  --ar-font-size-2xl: 36px;
+  --ar-font-size-3xl: 48px;
+
+  /* ─── Typography: weight (unitless) ─────────────────────────────────────── */
+  --ar-font-weight-weight-light: 300;
+  --ar-font-weight-weight-regular: 400;
+  --ar-font-weight-weight-medium: 500;
+  --ar-font-weight-weight-semibold: 600;
+  --ar-font-weight-weight-bold: 700;
+
+  /* ─── Letter spacing ─────────────────────────────────────────────────────── */
+  --ar-letter-spacing-tracking-tight: -1px;
+  --ar-letter-spacing-tracking-normal: 0px;
+  --ar-letter-spacing-tracking-wide: 1px;
+
+  /* ─── Line height (px) ───────────────────────────────────────────────────── */
+  --ar-line-height-2xs: 16px;
+  --ar-line-height-xs: 20px;
+  --ar-line-height-sm: 22px;
+  --ar-line-height-md: 24px;
+  --ar-line-height-lg: 32px;
+  --ar-line-height-xl: 40px;
+  --ar-line-height-2xl: 48px;
+  --ar-line-height-3xl: 56px;
+
+  /* ─── Opacity (0–1 scale) ──────────────────────────────────────────────── */
+  --ar-opacity-0: 0;
+  --ar-opacity-10: 0.1;
+  --ar-opacity-20: 0.2;
+  --ar-opacity-40: 0.4;
+  --ar-opacity-60: 0.6;
+  --ar-opacity-80: 0.8;
+  --ar-opacity-100: 1;
+
+  /* ─── Sizing (px) ────────────────────────────────────────────────────────── */
+  --ar-size-1: 24px;
+  --ar-size-2: 32px;
+  --ar-size-3: 40px;
+  --ar-size-4: 48px;
+  --ar-size-5: 64px;
+  --ar-size-6: 80px;
+  --ar-size-container-sm: 480px;
+  --ar-size-container-md: 736px;
+  --ar-size-container-lg: 1120px;
+
+  /* ─── Space scale (px) ───────────────────────────────────────────────────── */
+  --ar-space-1: 4px;
+  --ar-space-2: 8px;
+  --ar-space-3: 12px;
+  --ar-space-4: 16px;
+  --ar-space-6: 24px;
+  --ar-space-8: 32px;
+  --ar-space-12: 48px;
+  --ar-space-16: 64px;
+  --ar-space-20: 80px;
+  --ar-space-24: 96px;
+  --ar-space-28: 112px;
+  --ar-space-32: 128px;
+  --ar-space-36: 144px;
+
+  /* ─── Stroke / border width (px) ─────────────────────────────────────────── */
+  --ar-stroke-weight-thin: 1px;
+  --ar-stroke-weight-regular: 2px;
+  --ar-stroke-weight-medium: 3px;
+  --ar-stroke-weight-thick: 4px;
+  --ar-stroke-weight-heavy: 6px;
+
+  /* ─── Legacy aliases (pre–token-system) — map to semantics / primitives ─── */
+  --ar-bg: var(--ar-color-neutral-50);
+  --ar-surface: var(--ar-color-semantic-background-default);
+  --ar-text: var(--ar-color-semantic-text-primary);
+  --ar-text-muted: var(--ar-color-semantic-text-secondary);
+  --ar-border: var(--ar-color-semantic-border-default);
+  --ar-primary: var(--ar-color-semantic-button-primary);
+  --ar-primary-hover: var(--ar-color-semantic-button-primary-hover);
+  --ar-secondary: var(--ar-color-primary-500);
+  --ar-secondary-hover: var(--ar-color-primary-600);
+}
