@@ -3,7 +3,7 @@
 **Live Demo:**
 👉 https://archrecon-portal.vercel.app
 
-**To Log In Use**
+**To Log In Use:**
 john@company.com
 
 ---
