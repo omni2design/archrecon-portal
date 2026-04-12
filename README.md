@@ -2,6 +2,8 @@
 
 **Live Demo:**
 👉 https://archrecon-portal.vercel.app
+**When Loggin In**
+Type: john@company.com
 
 ---
 
