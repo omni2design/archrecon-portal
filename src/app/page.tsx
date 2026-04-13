@@ -1,14 +1,15 @@
 "use client";
 
+import { DEMO_ENTRY_STORAGE_KEY } from "@/lib/demo-entry-storage";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-/** Figma login overlay: white wash + brand diagonal gradient (ArchRecon Portal Log In). */
+/** Figma login overlay: white wash + brand diagonal gradient (ArchRecon Portal Log In — demo). */
 const LOGIN_PAGE_GRADIENT =
   "linear-gradient(90deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.5) 100%), linear-gradient(146.99744882865932deg, rgb(127, 195, 232) 0%, rgb(140, 190, 228) 7.1429%, rgb(152, 186, 223) 14.286%, rgb(162, 181, 219) 21.429%, rgb(172, 176, 214) 28.571%, rgb(181, 170, 210) 35.714%, rgb(189, 165, 206) 42.857%, rgb(197, 160, 201) 50%, rgb(204, 154, 197) 57.143%, rgb(211, 148, 193) 64.286%, rgb(218, 142, 188) 71.429%, rgb(224, 135, 184) 78.571%, rgb(230, 129, 180) 85.714%, rgb(236, 122, 175) 92.857%, rgb(241, 114, 171) 100%)";
 
-const MVP_LOGIN_EMAIL = "john@company.com";
+const DEMO_EMAIL = "john@company.com";
 
 function IconGoogle({ className }: { className?: string }) {
   return (
@@ -39,6 +40,7 @@ function IconGoogle({ className }: { className?: string }) {
   );
 }
 
+/** Up-right (≈45°) arrow — original rounded stroke style, separate from label. */
 function IconArrowUpRight({ className }: { className?: string }) {
   return (
     <svg
@@ -61,10 +63,78 @@ function IconArrowUpRight({ className }: { className?: string }) {
   );
 }
 
+function InlineLoader() {
+  return (
+    <span
+      className="inline-block size-[18px] shrink-0 rounded-full border-2 border-[color:var(--ar-color-semantic-button-primary-boarder)] border-t-[var(--ar-color-semantic-button-primary-text)] motion-safe:animate-spin"
+      aria-hidden
+    />
+  );
+}
+
+function DemoWorkspaceLoadingOverlay() {
+  return (
+    <div
+      className="fixed inset-0 z-[300] flex flex-col items-center justify-center gap-5 bg-white/70 px-6 backdrop-blur-sm transition-opacity duration-200 ease-in-out motion-reduce:transition-none"
+      role="status"
+      aria-live="polite"
+      aria-label="Loading demo workspace"
+    >
+      <div className="relative size-[52px] shrink-0 overflow-hidden rounded-full bg-[var(--ar-secondary)]">
+        <Image
+          src="/brand/archreconlogo2d.png"
+          alt=""
+          fill
+          sizes="52px"
+          className="object-cover"
+          priority
+        />
+      </div>
+      <div className="flex flex-col items-center gap-3">
+        <p className="text-center font-[family-name:var(--ar-font-family-body)] text-base font-medium leading-5 text-[#00162d]">
+          Loading demo workspace...
+        </p>
+        <span
+          className="inline-block size-[22px] rounded-full border-2 border-[#f4038b]/25 border-t-[#f4038b] motion-safe:animate-spin"
+          aria-hidden
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const canLogIn = email.trim() === MVP_LOGIN_EMAIL;
+  const [entryBusy, setEntryBusy] = useState(false);
+  const [showOverlay, setShowOverlay] = useState(false);
+  const timersRef = useRef<number[]>([]);
+
+  useEffect(
+    () => () => {
+      timersRef.current.forEach((id) => window.clearTimeout(id));
+    },
+    [],
+  );
+
+  function beginDemoEntry() {
+    if (entryBusy) return;
+    setEntryBusy(true);
+
+    const showAt = window.setTimeout(() => {
+      setShowOverlay(true);
+    }, 95);
+
+    const navigateAt = window.setTimeout(() => {
+      try {
+        sessionStorage.setItem(DEMO_ENTRY_STORAGE_KEY, "1");
+      } catch {
+        /* private mode / storage blocked */
+      }
+      router.push("/dashboard");
+    }, 95 + 640);
+
+    timersRef.current.push(showAt, navigateAt);
+  }
 
   return (
     <div className="relative min-h-screen w-full overflow-x-hidden bg-white">
@@ -74,100 +144,114 @@ export default function LoginPage() {
         aria-hidden
       />
 
-      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-12">
+      <div
+        className={`relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-12 ${showOverlay ? "pointer-events-none" : ""}`}
+      >
         <div className="flex w-full max-w-[540px] flex-col gap-4">
-          <div className="flex items-center gap-2">
-            <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-[var(--ar-secondary)]">
-              <Image
-                src="/brand/archreconlogo2d.png"
-                alt=""
-                fill
-                sizes="48px"
-                className="object-cover"
-                priority
-              />
+          <div className="flex w-full justify-start">
+            <div className="flex items-center gap-2">
+              <div className="relative size-12 shrink-0 overflow-hidden rounded-full bg-[var(--ar-secondary)]">
+                <Image
+                  src="/brand/archreconlogo2d.png"
+                  alt=""
+                  fill
+                  sizes="48px"
+                  className="object-cover"
+                  priority
+                />
+              </div>
+              <span className="font-[family-name:var(--ar-font-family-heading)] text-2xl font-medium leading-8 text-[#00162d]">
+                ArchRecon
+              </span>
             </div>
-            <span className="font-[family-name:var(--ar-font-family-heading)] text-2xl font-medium leading-8 text-[#00162d]">
-              ArchRecon
-            </span>
           </div>
 
-          <div className="rounded-2xl border border-[#e5e5e5] bg-white p-6 shadow-sm">
-            <div className="flex flex-col items-stretch gap-4">
-              <h1 className="font-[family-name:var(--ar-font-family-heading)] text-2xl font-medium leading-8 text-[#00162d]">
-                Log into your account!
-              </h1>
-
-              <button
-                type="button"
-                className="relative flex h-12 w-full items-center justify-center gap-2 rounded-full border border-white/50 bg-[#003c79] px-8 text-base font-medium text-[#fafdff] transition hover:bg-[var(--ar-color-primary-700)]"
-              >
-                <span>Continue with Google</span>
-                <IconGoogle className="shrink-0" />
-              </button>
-            </div>
-
-            <div className="mt-8 border-t border-[#e5e5e5] pt-[17px]">
-              <form
-                className="flex flex-col gap-4"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (canLogIn) router.push("/dashboard");
-                }}
-              >
-                <label className="flex flex-col gap-4">
-                  <span className="font-[family-name:var(--ar-font-family-heading)] text-2xl font-medium leading-8 text-[#00162d]">
-                    Email
-                  </span>
-                  <input
-                    type="email"
-                    name="email"
-                    autoComplete="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-full border-0 bg-[#f5f5f5] px-6 py-3 font-[family-name:var(--ar-font-family-body)] text-sm text-[#00162d] outline-none ring-0 placeholder:text-[#6f6f6f] focus:ring-2 focus:ring-[var(--ar-color-primary-500)]"
-                  />
-                </label>
+          <div className="w-full rounded-2xl border border-[#e5e5e5] bg-white p-6 shadow-sm">
+            <div className="flex flex-col gap-8">
+              <div className="flex w-full flex-col items-center gap-4">
+                <h1 className="w-full text-left font-[family-name:var(--ar-font-family-heading)] text-2xl font-medium leading-8 text-[#00162d]">
+                  Log into your account!
+                </h1>
 
                 <button
-                  type="submit"
-                  disabled={!canLogIn}
-                  className={[
-                    "relative flex h-12 w-full items-center justify-center gap-2 rounded-full px-8 text-base font-medium transition",
-                    canLogIn
-                      ? "bg-[var(--ar-color-semantic-button-primary)] text-[var(--ar-color-semantic-button-primary-text)] hover:bg-[var(--ar-color-semantic-button-primary-hover)]"
-                      : "cursor-not-allowed bg-[var(--ar-color-semantic-button-disabled)] text-[var(--ar-color-semantic-button-disabled-text)]",
-                  ].join(" ")}
+                  type="button"
+                  disabled
+                  aria-disabled
+                  tabIndex={-1}
+                  className="pointer-events-none relative flex h-12 w-full cursor-not-allowed items-center justify-center gap-2 rounded-full bg-[var(--ar-color-semantic-button-disabled)] px-8 text-base font-medium text-[var(--ar-color-semantic-button-disabled-text)]"
                 >
-                  <span className="relative z-[1]">Log In</span>
-                  {canLogIn ? (
-                    <IconArrowUpRight className="relative z-[1] shrink-0 text-[var(--ar-color-semantic-button-primary-text)]" />
-                  ) : null}
+                  <span>Continue with Google</span>
+                  <IconGoogle className="shrink-0 grayscale opacity-[0.55]" />
                   <span
-                    className={[
-                      "pointer-events-none absolute inset-0 rounded-full border",
-                      canLogIn
-                        ? "border-[color:var(--ar-color-semantic-button-primary-boarder)]"
-                        : "border-[color:var(--ar-color-semantic-button-disabled-boarder)]",
-                    ].join(" ")}
+                    className="pointer-events-none absolute inset-0 rounded-full border border-[color:var(--ar-color-semantic-button-disabled-boarder)]"
                     aria-hidden
                   />
                 </button>
+              </div>
 
-                <p className="text-center font-[family-name:var(--ar-font-family-body)] text-sm leading-5 text-[#6f6f6f]">
-                  Don’t have an account?{" "}
-                  <span className="font-medium text-[#00162d]">Sign up</span>
-                </p>
+              <div className="border-t border-[#e5e5e5] pt-[17px]">
+                <form
+                  className="flex flex-col gap-4"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    beginDemoEntry();
+                  }}
+                >
+                  <div className="flex w-full flex-col gap-1">
+                    <span className="font-[family-name:var(--ar-font-family-heading)] text-2xl font-medium leading-8 text-[#00162d]">
+                      Email
+                    </span>
+                    <p className="font-[family-name:var(--ar-font-family-body)] text-sm font-medium leading-5 text-[#0053a7]">
+                      Explore the demo — no signup required
+                    </p>
+                  </div>
 
-                <p className="text-center font-[family-name:var(--ar-font-family-body)] text-xs leading-4 text-[#999]">
-                  We’ll send a 6 digit login code to your inbox.
-                </p>
-              </form>
+                  <div className="flex w-full rounded-[48px] bg-[#f5f5f5] px-6 py-3">
+                    <input
+                      type="email"
+                      name="email"
+                      readOnly
+                      tabIndex={-1}
+                      value={DEMO_EMAIL}
+                      aria-readonly="true"
+                      className="w-full cursor-default border-0 bg-transparent font-[family-name:var(--ar-font-family-body)] text-sm font-normal leading-normal text-[#00162d] outline-none ring-0 focus:ring-0 focus-visible:ring-0"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={entryBusy}
+                    className={[
+                      "relative flex h-12 w-full items-center justify-center gap-2 rounded-full px-8 text-base font-medium transition-[transform,background-color,box-shadow] duration-150 ease-in-out motion-reduce:transition-none",
+                      entryBusy
+                        ? "scale-[0.97] cursor-wait bg-[var(--ar-color-semantic-button-primary-hover)] text-[var(--ar-color-semantic-button-primary-text)]"
+                        : "scale-100 bg-[var(--ar-color-semantic-button-primary)] text-[var(--ar-color-semantic-button-primary-text)] hover:bg-[var(--ar-color-semantic-button-primary-hover)]",
+                    ].join(" ")}
+                  >
+                    {entryBusy ? (
+                      <>
+                        <span className="relative z-[1]">Entering workspace...</span>
+                        <InlineLoader />
+                      </>
+                    ) : (
+                      <>
+                        <span className="relative z-[1]">Enter Demo</span>
+                        <IconArrowUpRight className="relative z-[1] shrink-0 text-[var(--ar-color-semantic-button-primary-text)]" />
+                      </>
+                    )}
+                    <span
+                      className="pointer-events-none absolute inset-0 rounded-full border border-[color:var(--ar-color-semantic-button-primary-boarder)]"
+                      aria-hidden
+                    />
+                  </button>
+                </form>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      {showOverlay ? <DemoWorkspaceLoadingOverlay /> : null}
     </div>
   );
 }

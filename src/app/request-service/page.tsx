@@ -145,6 +145,29 @@ function RequiredLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+/** Same up-right arrow as login “Enter Demo” CTA (`src/app/page.tsx`). */
+function IconArrowUpRight({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <path
+        d="M7 17L17 7M17 7H9M17 7V15"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export default function RequestServicePage() {
   const router = useRouter();
   const [selectedService, setSelectedService] = useState<ServiceId | null>(null);
@@ -316,13 +339,16 @@ export default function RequestServicePage() {
                         type="button"
                         disabled={!selectedService}
                         className={[
-                          "relative flex h-12 min-w-[160px] flex-1 items-center justify-center rounded-full px-8 text-base font-medium transition",
+                          "relative flex h-12 min-w-[160px] flex-1 items-center justify-center gap-2 rounded-full px-8 text-base font-medium transition",
                           selectedService
                             ? "border border-white/50 bg-[#f4038b] text-[#fff8fc] hover:opacity-95"
                             : "cursor-not-allowed bg-[#d6d6d6] text-[#999] after:pointer-events-none after:absolute after:inset-0 after:rounded-full after:border after:border-black/50",
                         ].join(" ")}
                       >
-                        Submit Request
+                        <span className="relative z-[1]">Submit Request</span>
+                        {selectedService ? (
+                          <IconArrowUpRight className="relative z-[1] shrink-0 text-[#fff8fc]" />
+                        ) : null}
                       </button>
                       <button
                         type="button"
