@@ -69,7 +69,8 @@ export default function DashboardEnterTransition({
     if (typeof window === "undefined") return;
     if (sessionStorage.getItem(DEMO_ENTRY_STORAGE_KEY) === "1") {
       sessionStorage.removeItem(DEMO_ENTRY_STORAGE_KEY);
-      setPhase("skeleton");
+      const id = window.setTimeout(() => setPhase("skeleton"), 0);
+      return () => window.clearTimeout(id);
     }
   }, []);
 

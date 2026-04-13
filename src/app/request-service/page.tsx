@@ -3,7 +3,7 @@
 import AppShell from "@/components/layout/app-shell";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 /** Matches Figma multi-stop brand gradient on service icons. */
 const AR_BRAND_GRADIENT =
@@ -171,14 +171,53 @@ function IconArrowUpRight({ className }: { className?: string }) {
 export default function RequestServicePage() {
   const router = useRouter();
   const [selectedService, setSelectedService] = useState<ServiceId | null>(null);
+  const [projectName, setProjectName] = useState("");
+  const [propertyAddress, setPropertyAddress] = useState("");
+  const [projectType, setProjectType] = useState("");
+  const [notes, setNotes] = useState("");
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   const selectedLabel = selectedService
     ? SERVICES.find((s) => s.id === selectedService)?.title ?? "Not selected"
     : "Not selected";
 
+  const submitEnabled = useMemo(() => {
+    return (
+      Boolean(selectedService) &&
+      projectName.trim().length > 0 &&
+      propertyAddress.trim().length > 0 &&
+      projectType.trim().length > 0
+    );
+  }, [projectName, projectType, propertyAddress, selectedService]);
+
+  const filesLabel = uploadedFiles.length === 0 ? "0 file(s)" : `${uploadedFiles.length} file(s)`;
+
   const onPickService = useCallback((id: ServiceId) => {
     setSelectedService((prev) => (prev === id ? null : id));
   }, []);
+
+  const onSubmit = useCallback(() => {
+    if (!submitEnabled) return;
+
+    const params = new URLSearchParams();
+    if (selectedService) params.set("service", selectedService);
+    if (projectName.trim()) params.set("projectName", projectName.trim());
+    if (propertyAddress.trim()) params.set("propertyAddress", propertyAddress.trim());
+    if (projectType.trim()) params.set("projectType", projectType.trim());
+    if (uploadedFiles.length) params.set("files", String(uploadedFiles.length));
+    if (notes.trim()) params.set("notes", notes.trim());
+
+    router.push(`/request-submitted?${params.toString()}`);
+  }, [
+    notes,
+    projectName,
+    projectType,
+    propertyAddress,
+    router,
+    selectedService,
+    submitEnabled,
+    uploadedFiles.length,
+  ]);
 
   return (
     <AppShell activeItem="requests">
@@ -246,6 +285,8 @@ export default function RequestServicePage() {
                       <input
                         type="text"
                         placeholder="Enter project name"
+                        value={projectName}
+                        onChange={(e) => setProjectName(e.target.value)}
                         className="h-12 w-full rounded-[10px] border border-[#e5e5e5] bg-white px-4 text-base text-[#00162d] outline-none placeholder:text-[#999] focus:border-[#99bfff] focus:ring-2 focus:ring-[#99bfff]/25"
                       />
                     </div>
@@ -256,13 +297,16 @@ export default function RequestServicePage() {
                       <input
                         type="text"
                         placeholder="Enter property address"
+                        value={propertyAddress}
+                        onChange={(e) => setPropertyAddress(e.target.value)}
                         className="h-12 w-full rounded-[10px] border border-[#e5e5e5] bg-white px-4 text-base text-[#00162d] outline-none placeholder:text-[#999] focus:border-[#99bfff] focus:ring-2 focus:ring-[#99bfff]/25"
                       />
                     </div>
                     <div className="flex w-full flex-col gap-2">
                       <RequiredLabel>Project Type</RequiredLabel>
                       <select
-                        defaultValue=""
+                        value={projectType}
+                        onChange={(e) => setProjectType(e.target.value)}
                         className="h-12 w-full appearance-none rounded-[10px] border border-[#e5e5e5] bg-white px-4 text-base text-[#999] outline-none focus:border-[#99bfff] focus:ring-2 focus:ring-[#99bfff]/25"
                         style={{
                           backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%236f6f6f' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
@@ -274,10 +318,15 @@ export default function RequestServicePage() {
                         <option value="" disabled>
                           Select project type
                         </option>
-                        <option value="residential">Residential</option>
-                        <option value="commercial">Commercial</option>
-                        <option value="mixed">Mixed use</option>
-                        <option value="other">Other</option>
+                        <option value="Residential - Single Family">
+                          Residential - Single Family
+                        </option>
+                        <option value="Residential - Multi Family">
+                          Residential - Multi Family
+                        </option>
+                        <option value="Commercial">Commercial</option>
+                        <option value="Mixed Use">Mixed Use</option>
+                        <option value="Other">Other</option>
                       </select>
                     </div>
                     <div className="flex w-full min-h-[140px] flex-col gap-2">
@@ -287,6 +336,8 @@ export default function RequestServicePage() {
                       <textarea
                         placeholder="Add any additional details or special requirements"
                         rows={6}
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
                         className="min-h-[120px] w-full resize-y rounded-[10px] border border-[#e5e5e5] bg-white px-4 py-3 text-base text-[#00162d] outline-none placeholder:text-[#999] focus:border-[#99bfff] focus:ring-2 focus:ring-[#99bfff]/25"
                       />
                     </div>
@@ -305,7 +356,12 @@ export default function RequestServicePage() {
                       Accepted formats: PDF, JPG, PNG, DWG, DXF, RVT, SKP (Max 50MB per file)
                     </p>
                     <label className="flex w-full cursor-pointer flex-col items-center gap-3 rounded-[14px] border-2 border-dashed border-[#e5e5e5] bg-[#fafafa] py-[50px] transition hover:bg-[#f3f4f6]">
-                      <input type="file" multiple className="sr-only" />
+                      <input
+                        type="file"
+                        multiple
+                        className="sr-only"
+                        onChange={(e) => setUploadedFiles(Array.from(e.target.files ?? []))}
+                      />
                       <div className="relative size-12 shrink-0">
                         <Image
                           src={UPLOAD_ICON_URL}
@@ -322,6 +378,60 @@ export default function RequestServicePage() {
                         You can upload multiple files at once
                       </p>
                     </label>
+
+                    <div className="w-full">
+                      <p className="text-sm font-medium leading-5 text-[#00162d]">
+                        Uploaded Files ({uploadedFiles.length})
+                      </p>
+                      {uploadedFiles.length > 0 ? (
+                        <div className="mt-3 flex flex-col gap-2">
+                          {uploadedFiles.map((file) => (
+                            <div
+                              key={`${file.name}-${file.size}-${file.lastModified}`}
+                              className="flex items-center justify-between gap-3 rounded-xl border border-[#e5e5e5] bg-white px-4 py-3"
+                            >
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-medium text-[#00162d]">
+                                  {file.name}
+                                </p>
+                                <p className="text-xs font-medium text-[#6f6f6f]">
+                                  {(file.size / (1024 * 1024)).toFixed(2)} MB
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                className="shrink-0 rounded-lg p-2 text-[#6f6f6f] transition hover:bg-[#f3f4f6] hover:text-[#00162d]"
+                                aria-label={`Remove ${file.name}`}
+                                onClick={() =>
+                                  setUploadedFiles((prev) =>
+                                    prev.filter((f) => f !== file),
+                                  )
+                                }
+                              >
+                                <svg
+                                  width="16"
+                                  height="16"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  aria-hidden
+                                >
+                                  <path d="M18 6 6 18" />
+                                  <path d="M6 6l12 12" />
+                                </svg>
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="mt-2 text-sm font-medium leading-5 text-[#6f6f6f]">
+                          No files uploaded yet.
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </section>
 
@@ -330,23 +440,63 @@ export default function RequestServicePage() {
                     Review & Submit
                   </h2>
                   <div className="flex w-full flex-col gap-6 rounded-[14px] border border-[#e5e5e5] bg-white p-8">
-                    <div className="flex w-full flex-col gap-1 rounded-[10px] bg-[#fafafa] p-6 font-medium leading-5 tracking-normal">
-                      <p className="w-full text-sm text-[#6f6f6f]">Selected Service:</p>
-                      <p className="w-full text-base text-black">{selectedLabel}</p>
+                    <div className="flex w-full flex-col gap-4 rounded-[10px] bg-[#fafafa] p-6 font-medium leading-5 tracking-normal">
+                      <div className="h-12">
+                        <p className="text-sm font-normal text-[#6f6f6f]">Selected Service:</p>
+                        <p className="mt-1 text-base text-black">{selectedLabel}</p>
+                      </div>
+
+                      <div className="h-12">
+                        <p className="text-sm font-normal text-[#6f6f6f]">Project Name:</p>
+                        <p className="mt-1 text-base text-black">
+                          {projectName.trim().length > 0 ? projectName : "—"}
+                        </p>
+                      </div>
+
+                      <div className="h-12">
+                        <p className="text-sm font-normal text-[#6f6f6f]">Property Address:</p>
+                        <p className="mt-1 text-base text-black">
+                          {propertyAddress.trim().length > 0 ? propertyAddress : "—"}
+                        </p>
+                      </div>
+
+                      <div className="h-12">
+                        <p className="text-sm font-normal text-[#6f6f6f]">Project Type:</p>
+                        <p className="mt-1 text-base text-black">
+                          {projectType.trim().length > 0 ? projectType : "—"}
+                        </p>
+                      </div>
+
+                      <div className="h-12">
+                        <p className="text-sm font-normal text-[#6f6f6f]">Files Uploaded:</p>
+                        <p className="mt-1 text-base text-black">{filesLabel}</p>
+                      </div>
+
+                      {notes.trim().length > 0 ? (
+                        <div>
+                          <p className="text-sm font-normal text-[#6f6f6f]">
+                            Notes / Description:
+                          </p>
+                          <p className="mt-1 whitespace-pre-wrap text-base font-normal text-black">
+                            {notes}
+                          </p>
+                        </div>
+                      ) : null}
                     </div>
                     <div className="flex w-full flex-wrap items-start gap-4">
                       <button
                         type="button"
-                        disabled={!selectedService}
+                        disabled={!submitEnabled}
+                        onClick={onSubmit}
                         className={[
                           "relative flex h-12 min-w-[160px] flex-1 items-center justify-center gap-2 rounded-full px-8 text-base font-medium transition",
-                          selectedService
+                          submitEnabled
                             ? "border border-white/50 bg-[#f4038b] text-[#fff8fc] hover:opacity-95"
                             : "cursor-not-allowed bg-[#d6d6d6] text-[#999] after:pointer-events-none after:absolute after:inset-0 after:rounded-full after:border after:border-black/50",
                         ].join(" ")}
                       >
                         <span className="relative z-[1]">Submit Request</span>
-                        {selectedService ? (
+                        {submitEnabled ? (
                           <IconArrowUpRight className="relative z-[1] shrink-0 text-[#fff8fc]" />
                         ) : null}
                       </button>
