@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
-type TabKey = "overview" | "floor-plans" | "as-built-docs" | "drafting-design" | "3d-scans";
+type TabKey = "overview" | "drafting-design" | "activity";
 type AssetCategory = "All" | "Renders" | "Site Plans" | "Floor Plans" | "Sections" | "Documents";
 
 type Asset = {
@@ -37,17 +37,24 @@ function DownloadIcon({ className }: { className?: string }) {
   );
 }
 
-function StatusPill({ label }: { label: string }) {
+function ChevronRightIcon({ className }: { className?: string }) {
   return (
-    <div className="relative rounded-full bg-[var(--ar-color-state-success-boarder)] px-[var(--ar-space-3)] py-[var(--ar-space-1)]">
-      <span
-        className="text-sm font-medium text-[var(--ar-color-state-success-text)]"
-        style={{ fontFamily: "var(--ar-font-family-body)" }}
-      >
-        {label}
-      </span>
-      <div className="pointer-events-none absolute inset-0 rounded-full border border-[var(--ar-color-state-success-bg)]" />
-    </div>
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      height="8"
+      viewBox="0 0 5 8"
+      width="5"
+    >
+      <path
+        d="M1 1l3 3-3 3"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.5"
+      />
+    </svg>
   );
 }
 
@@ -62,7 +69,7 @@ function ProjectTab({
 }) {
   return (
     <button
-      className="relative h-9 whitespace-nowrap px-2 text-sm font-medium"
+      className="relative flex h-[37px] flex-col items-center justify-start whitespace-nowrap px-[7px] text-sm font-medium"
       onClick={onClick}
       style={{ fontFamily: "var(--ar-font-family-body)" }}
       type="button"
@@ -171,77 +178,79 @@ export default function CasaMiradorPage() {
 
   return (
     <AppShell activeItem="projects">
-      <div className="-mx-8 -my-8 bg-[var(--ar-bg)]">
-        <section className="border-b border-[#e5e5e5] bg-white px-[var(--ar-space-8)] pb-px pt-[var(--ar-space-8)]">
-          <div className="flex flex-col gap-[var(--ar-space-8)]">
-            <div className="mx-auto flex w-full max-w-[808px] flex-col items-center gap-[var(--ar-space-4)]">
-              <StatusPill label="Completed" />
+      <div className="-mx-8 bg-[var(--ar-bg)]">
+        <section className="-mt-8 border-b border-[#e5e5e5] bg-white">
+          <div className="p-8">
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex h-5 w-full items-center justify-center gap-[var(--ar-space-2)]">
+              <Link
+                className="text-sm font-medium [--crumb-color:#6F6F6F] text-[color:var(--crumb-color)] hover:[--crumb-color:#00162D] hover:underline"
+                href="/projects"
+                style={{ fontFamily: "var(--ar-font-family-body)" }}
+              >
+                Projects
+              </Link>
+              <ChevronRightIcon className="text-[var(--ar-color-semantic-text-secondary)]" />
+              <span
+                className="text-sm font-medium text-[var(--ar-color-primary-800)]"
+                style={{ fontFamily: "var(--ar-font-family-body)" }}
+              >
+                Casa Mirador
+              </span>
+            </div>
 
-              <div className="flex flex-col items-center gap-0 text-center">
-                <h1
-                  className="text-[48px] leading-[56px] tracking-[-1px] text-[var(--ar-color-primary-800)]"
-                  style={{ fontFamily: "var(--ar-font-family-heading)" }}
-                >
-                  CASA MIRADOR
-                </h1>
-                <p
-                  className="text-base font-medium leading-5 text-[var(--ar-color-semantic-text-secondary)]"
-                  style={{ fontFamily: "var(--ar-font-family-body)" }}
-                >
-                  Passive Tropical Residence with Integrated Courtyard Landscape
-                </p>
-              </div>
+              <div className="text-center">
+              <h1
+                className="text-[36px] leading-[40px] text-[var(--ar-color-primary-800)]"
+                style={{ fontFamily: "var(--ar-font-family-heading)" }}
+              >
+                Casa Mirador
+              </h1>
+              <p
+                className="mt-0 text-base font-medium leading-5 text-[var(--ar-color-semantic-text-secondary)]"
+                style={{ fontFamily: "var(--ar-font-family-body)" }}
+              >
+                Passive Tropical Residence with Integrated Courtyard Landscape
+              </p>
+            </div>
 
+            <div className="flex w-full items-center justify-center">
               <button
                 className="relative inline-flex h-12 items-center justify-center gap-[var(--ar-space-2)] rounded-full bg-[var(--ar-color-semantic-button-primary)] px-[var(--ar-space-8)] text-[var(--ar-color-semantic-button-primary-text)]"
                 style={{ fontFamily: "var(--ar-font-family-body)" }}
                 type="button"
               >
-                <span className="text-[16px] font-medium leading-[19.2px]">Download Full Package</span>
+                <span className="text-[16px] font-medium leading-[19.2px]">
+                  Download Full Package
+                </span>
                 <span className="absolute inset-0 rounded-full border border-[color:var(--ar-color-semantic-button-primary-boarder)]" />
                 <DownloadIcon className="relative text-[var(--ar-color-semantic-button-primary-text)]" />
               </button>
             </div>
+          </div>
+          </div>
 
-            <div className="flex items-center justify-center gap-[var(--ar-space-8)] border-b border-[#e5e5e5]">
-              <ProjectTab
-                isActive={activeTab === "overview"}
-                label="Overview"
-                onClick={() => setActiveTab("overview")}
-              />
-              <ProjectTab
-                isActive={activeTab === "floor-plans"}
-                label="Floor Plans"
-                onClick={() => setActiveTab("floor-plans")}
-              />
-              <ProjectTab
-                isActive={activeTab === "as-built-docs"}
-                label="As-Built Docs"
-                onClick={() => setActiveTab("as-built-docs")}
-              />
-              <ProjectTab
-                isActive={activeTab === "drafting-design"}
-                label="Drafting & Design"
-                onClick={() => setActiveTab("drafting-design")}
-              />
-              <ProjectTab
-                isActive={activeTab === "3d-scans"}
-                label="3D Scans"
-                onClick={() => setActiveTab("3d-scans")}
-              />
-            </div>
+          <div className="flex items-center justify-center gap-[var(--ar-space-8)] border-b border-[#e5e5e5]">
+            <ProjectTab
+              isActive={activeTab === "overview"}
+              label="Overview"
+              onClick={() => setActiveTab("overview")}
+            />
+            <ProjectTab
+              isActive={activeTab === "drafting-design"}
+              label="Drafting & Design"
+              onClick={() => setActiveTab("drafting-design")}
+            />
+            <ProjectTab
+              isActive={activeTab === "activity"}
+              label="Activity"
+              onClick={() => setActiveTab("activity")}
+            />
           </div>
         </section>
 
-        <section className="px-8 pb-10 pt-8">
-          <div className="mx-auto flex max-w-[1120px] flex-col items-center gap-4">
-            <h2
-              className="text-center text-[36px] leading-[40px] text-[var(--ar-color-primary-800)]"
-              style={{ fontFamily: "var(--ar-font-family-heading)" }}
-            >
-              PROJECT DRAWINGS
-            </h2>
-
+        <section className="px-[var(--ar-space-8)] pb-[var(--ar-space-8)] pt-[var(--ar-space-8)]">
+          <div className="mx-auto flex max-w-[1120px] flex-col items-center gap-[var(--ar-space-4)]">
             <div className="flex flex-wrap items-center justify-center gap-2">
               {(
                 ["All", "Renders", "Site Plans", "Floor Plans", "Sections", "Documents"] as const
@@ -255,7 +264,7 @@ export default function CasaMiradorPage() {
               ))}
             </div>
 
-            <div className="mt-2 grid w-full grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-2 grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {filteredAssets.map((asset) => (
                 <AssetCard key={`${asset.title}-${asset.category}`} asset={asset} />
               ))}

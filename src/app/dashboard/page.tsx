@@ -5,7 +5,10 @@ import DashboardEnterTransition from "./dashboard-enter-transition";
 export default function DashboardPage() {
   return (
     <DashboardEnterTransition>
-      <AppShell activeItem="dashboard">
+      <AppShell
+        activeItem="dashboard"
+        mainClassName="px-8 pt-0 pb-8"
+      >
         <DashboardHomeContent />
       </AppShell>
     </DashboardEnterTransition>

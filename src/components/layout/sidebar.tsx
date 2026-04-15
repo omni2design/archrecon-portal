@@ -174,7 +174,7 @@ function NavButton({
 
 export default function Sidebar({ activeItem = "dashboard" }: SidebarProps) {
   return (
-    <aside className="fixed left-0 top-0 z-30 flex h-screen w-[270px] flex-col border-r border-[#e5e5e5] bg-white">
+    <aside className="fixed left-0 top-[var(--ar-top-offset,0px)] z-30 flex h-[calc(100vh-var(--ar-top-offset,0px))] w-[270px] flex-col border-r border-[#e5e5e5] bg-white">
       <div>
         <Link
           href="/"
@@ -205,7 +205,7 @@ export default function Sidebar({ activeItem = "dashboard" }: SidebarProps) {
               active={activeItem === "dashboard"}
             />
             <NavButton
-              href="/projects/casa-mirador"
+              href="/projects"
               label="Projects"
               icon={<IconProjects />}
               active={activeItem === "projects"}

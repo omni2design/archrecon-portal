@@ -1,97 +1,179 @@
 import AppShell from "@/components/layout/app-shell";
 import Link from "next/link";
+import Image from "next/image";
+
+type ProjectStatusTone = "info" | "success" | "inProgress";
+
+const statusStyles: Record<
+  ProjectStatusTone,
+  { wrap: string; text: string; border: string }
+> = {
+  info: {
+    wrap: "bg-[#eff7ff] border-[#0053a7]",
+    text: "text-[#002952]",
+    border: "border-[#0053a7]",
+  },
+  success: {
+    wrap: "bg-[#e8f7f1] border-[#1fad75]",
+    text: "text-[#13795b]",
+    border: "border-[#1fad75]",
+  },
+  inProgress: {
+    wrap: "bg-[#ffebf6] border-[#cd0074]",
+    text: "text-[#2f001a]",
+    border: "border-[#cd0074]",
+  },
+};
+
+const ICON_LOCATION = "/icons/icon-location.svg";
+const ICON_DELIVERABLE = "/icons/icon-deliverable.svg";
+const ICON_FILTER = "/icons/icon-filter.svg";
+const ICON_ARROW = "/icons/icon-arrow.svg";
 
 function ProjectCard({
   title,
   location,
-  tags,
-  progress,
-  status,
+  deliverable,
+  statusLabel,
+  statusTone,
+  fileCountLabel,
   href,
+  imageSrc,
+  highlighted = false,
 }: {
   title: string;
   location: string;
-  tags: string[];
-  progress: number;
-  status: string;
+  deliverable: string;
+  statusLabel: string;
+  statusTone: ProjectStatusTone;
+  fileCountLabel: string;
   href: string;
+  imageSrc: string;
+  highlighted?: boolean;
 }) {
+  const tone = statusStyles[statusTone];
   return (
     <Link
       href={href}
-      className="block rounded-3xl border border-[var(--ar-border)] bg-white p-6 shadow-sm transition hover:shadow-md"
+      className={[
+        "block w-[260px] overflow-hidden rounded-[14px] border bg-white transition",
+        highlighted
+          ? "border-[var(--ar-primary)] shadow-[0px_2px_2px_2px_rgba(0,0,0,0.1)]"
+          : "border-[#e5e5e5] hover:shadow-sm",
+      ].join(" ")}
     >
-      <div className="flex items-start justify-between">
-        <div>
-          <h3 className="text-xl font-semibold text-[var(--ar-text)]">
-            {title}
-          </h3>
+      <div className="relative h-[157px] w-full bg-[#f3f3f5]">
+        <Image
+          src={imageSrc}
+          alt=""
+          fill
+          sizes="260px"
+          className="object-cover"
+          priority={highlighted}
+        />
+      </div>
 
-          <p className="mt-1 text-sm text-[var(--ar-text-muted)]">
-            {location}
+      <div className="flex flex-col gap-4 p-6">
+        <div className="flex min-w-0 flex-col gap-2">
+          <p className="truncate text-[18px] font-semibold leading-[22px] tracking-[0px] text-[#00162d]">
+            {title}
           </p>
 
-          <div className="mt-3 flex gap-2">
-            {tags.map((tag) => (
-              <span
-                key={tag}
-                className="rounded-full bg-[#f1f5f9] px-3 py-1 text-xs"
-              >
-                {tag}
-              </span>
-            ))}
+          <div className="flex items-center gap-2 text-[14px] leading-[20px] text-[#6f6f6f]">
+            <Image
+              src={ICON_LOCATION}
+              alt=""
+              width={11}
+              height={13}
+              className="shrink-0"
+            />
+            <p className="flex-1 truncate">{location}</p>
+          </div>
+
+          <div className="flex items-center gap-2 text-[14px] leading-[20px] text-[#6f6f6f]">
+            <Image
+              src={ICON_DELIVERABLE}
+              alt=""
+              width={13}
+              height={13}
+              className="shrink-0"
+            />
+            <p className="truncate">{deliverable}</p>
           </div>
         </div>
 
-        <span className="rounded-full border border-[var(--ar-secondary)] px-3 py-1 text-xs font-medium text-[var(--ar-secondary)]">
-          {status}
-        </span>
-      </div>
-
-      <div className="mt-5">
-        <div className="mb-2 flex justify-between text-xs text-[var(--ar-text-muted)]">
-          <span>Progress</span>
-          <span>{progress}%</span>
+        <div className="flex h-[26px] items-center justify-between">
+          <span
+            className={[
+              "inline-flex items-center rounded-full border px-3 py-1 text-[14px] font-medium leading-[20px]",
+              tone.wrap,
+              tone.text,
+              tone.border,
+            ].join(" ")}
+          >
+            {statusLabel}
+          </span>
+          <span className="text-right text-[12px] leading-[16px] text-[#6f6f6f]">
+            {fileCountLabel}
+          </span>
         </div>
 
-        <div className="h-2 rounded-full bg-[#e7edf4]">
-          <div
-            className="h-2 rounded-full bg-[linear-gradient(90deg,#99d6ff,#f33ca3)]"
-            style={{ width: `${progress}%` }}
-          />
+        <div className="flex">
+          <span className="inline-flex h-12 w-full items-center justify-center gap-[6px] rounded-full border border-white/50 bg-[#003c79] px-8 text-[16px] font-medium leading-[19.2px] text-[#FAFDFF] transition hover:bg-[var(--ar-color-primary-700)]">
+            Open Project{" "}
+            <Image
+              src={ICON_ARROW}
+              alt=""
+              width={20}
+              height={20}
+              className="shrink-0"
+            />
+          </span>
         </div>
       </div>
     </Link>
   );
 }
 
-function ActivityCard({
-  title,
-  subtitle,
-  time,
+function TogglePill({
+  label,
+  active = false,
+  className,
 }: {
-  title: string;
-  subtitle: string;
-  time: string;
+  label: string;
+  active?: boolean;
+  className?: string;
 }) {
   return (
-    <div className="rounded-2xl bg-[#f8fafc] p-4">
-      <p className="text-sm font-medium">{title}</p>
-      <p className="mt-1 text-sm text-[var(--ar-text-muted)]">{subtitle}</p>
-      <p className="mt-2 text-xs text-[var(--ar-text-muted)]">{time}</p>
-    </div>
+    <button
+      type="button"
+      className={[
+        "inline-flex h-[38px] items-center justify-center whitespace-nowrap rounded-[48px] border px-[16px] py-[8px] font-[family-name:var(--ar-font-family-body)] text-sm font-medium leading-[20px] transition",
+        active
+          ? "border-transparent bg-[#003c79] text-white"
+          : "border-[#d6d6d6] bg-white text-[#6f6f6f] hover:bg-[#f8fafc]",
+        className ?? "",
+      ].join(" ")}
+    >
+      {label}
+    </button>
   );
 }
 
-function QuickAction({
-  label,
-}: {
-  label: string;
-}) {
+function FilterPill({ label }: { label: string }) {
   return (
-    <button className="rounded-3xl border border-[var(--ar-border)] bg-white p-6 shadow-sm transition hover:bg-[#f8fafc]">
-      <div className="mb-4 text-xl">◦</div>
-      <p className="text-sm font-medium">{label}</p>
+    <button
+      type="button"
+      className="inline-flex h-[38px] items-center justify-center gap-2 rounded-[48px] border border-[#d6d6d6] bg-white px-[16px] py-[8px] font-[family-name:var(--ar-font-family-body)] text-sm font-medium leading-[20px] text-[#6f6f6f] transition hover:bg-[#f8fafc]"
+    >
+      <Image
+        src={ICON_FILTER}
+        alt=""
+        width={14}
+        height={14}
+        className="shrink-0"
+      />
+      {label}
     </button>
   );
 }
@@ -99,74 +181,110 @@ function QuickAction({
 export default function ProjectsPage() {
   return (
     <AppShell activeItem="projects">
-      <section className="space-y-8">
-        <div className="grid grid-cols-[1.75fr_0.8fr] gap-6">
-          <div className="space-y-4">
-            <ProjectCard
-              title="Williams Avenue Residence"
-              location="Los Angeles, CA"
-              tags={["Floor Plans", "As-Built"]}
-              progress={65}
-              status="Active"
-              href="/projects/casa-mirador"
-            />
+      <section className="w-full">
+        <div className="-mx-8 -mt-8 border-b border-[#e5e5e5] bg-white">
+          <div className="p-8">
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex h-5 items-center justify-center text-[14px] font-medium leading-[20px] text-[#00162d]">
+                Projects
+              </div>
 
-            <ProjectCard
-              title="Estrella Avenue House"
-              location="San Diego, CA"
-              tags={["3D Scan", "Drafting"]}
-              progress={40}
-              status="In Progress"
-              href="/projects/casa-mirador"
-            />
-
-            <ProjectCard
-              title="Casa Mirador"
-              location="Santa Barbara, CA"
-              tags={["Floor Plans", "Design"]}
-              progress={100}
-              status="Completed"
-              href="/projects/casa-mirador"
-            />
-          </div>
-
-          <div className="rounded-3xl border border-[var(--ar-border)] bg-white p-5 shadow-sm">
-            <div className="space-y-4">
-              <ActivityCard
-                title="Floor plan uploaded"
-                subtitle="Williams Avenue"
-                time="2 hours ago"
-              />
-              <ActivityCard
-                title="3D scan processed"
-                subtitle="Estrella Avenue"
-                time="5 hours ago"
-              />
-              <ActivityCard
-                title="As-built package ready"
-                subtitle="Casa Mirador"
-                time="1 day ago"
-              />
-              <ActivityCard
-                title="Drafting set in review"
-                subtitle="Williams Avenue"
-                time="2 days ago"
-              />
+              <div className="text-center">
+                <div className="font-[family-name:var(--ar-font-family-heading)] text-[36px] font-medium leading-[40px] tracking-[0px] text-[#00162d]">
+                  Your Projects
+                </div>
+                <div className="mt-0 text-center text-[14px] font-medium leading-[20px] text-[#6f6f6f]">
+                  View active and completed projects, track deliverables, and open
+                  project workspaces.
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div>
-          <h2 className="mb-4 text-2xl font-semibold">
-            Quick Actions
-          </h2>
+        <div className="-mx-8 bg-[#fafafa] p-8">
+          <div className="flex flex-col items-center gap-6">
+            <div className="flex w-full items-start justify-center">
+              <div className="inline-flex items-center gap-2">
+                <TogglePill label="All" active className="shrink-0" />
+                <TogglePill label="Active" className="shrink-0" />
+                <TogglePill label="Completed" className="shrink-0" />
+              </div>
 
-          <div className="grid grid-cols-4 gap-5">
-            <QuickAction label="Upload Floor Plans" />
-            <QuickAction label="Request As-Built" />
-            <QuickAction label="Start Drafting Set" />
-            <QuickAction label="Request 3D Scan" />
+              <div className="mx-6 shrink-0 self-stretch w-px bg-[#e5e5e5]" />
+
+              <div className="flex items-center gap-2">
+                <FilterPill label="Floor Plans" />
+                <FilterPill label="As-Built" />
+                <FilterPill label="Design Sets" />
+                <FilterPill label="3D Scans" />
+              </div>
+            </div>
+
+            <div className="inline-grid grid-cols-4 gap-4">
+            <ProjectCard
+              title="Williams Avenue Residence"
+              location="Larkspur, CA"
+              deliverable="Real Estate Floor Plans"
+              statusLabel="Active"
+              statusTone="info"
+              fileCountLabel="1 File"
+              href="#"
+              imageSrc="/projects/project-williams.jpg"
+            />
+            <ProjectCard
+              title="Pico Avenue Residence"
+              location="San Francisco, CA"
+              deliverable="Real Estate Floor Plans"
+              statusLabel="Completed"
+              statusTone="success"
+              fileCountLabel="1 File"
+              href="#"
+              imageSrc="/projects/project-pico.jpg"
+            />
+            <ProjectCard
+              title="Estrella Avenue Residence"
+              location="Piedmont, CA"
+              deliverable="As-Built Documentation"
+              statusLabel="In-Progress"
+              statusTone="inProgress"
+              fileCountLabel="10 Files"
+              href="#"
+              imageSrc="/projects/project-estrella.jpg"
+            />
+            <ProjectCard
+              title="Casa Mirador"
+              location="Merida, Mexico"
+              deliverable="Drafting & Design"
+              statusLabel="Featured Demo"
+              statusTone="info"
+              fileCountLabel="10 Files"
+              href="/projects/casa-mirador"
+              imageSrc="/projects/project-casa-mirador.jpg"
+              highlighted
+            />
+            <ProjectCard
+              title="Harbor Point Office Suite"
+              location="Oakland, CA"
+              deliverable="3D Reality Capture"
+              statusLabel="Scans Ready"
+              statusTone="success"
+              fileCountLabel="2 Files"
+              href="#"
+              imageSrc="/projects/project-harbor-point.jpg"
+            />
+            <ProjectCard
+              title="Redwood Commons Retail"
+              location="San Jose, CA"
+              deliverable="3D Reality Capture"
+              statusLabel="Processing"
+              statusTone="inProgress"
+              fileCountLabel="3 Files"
+              href="#"
+              imageSrc="/projects/project-redwood-commons.jpg"
+            />
           </div>
+        </div>
         </div>
       </section>
     </AppShell>

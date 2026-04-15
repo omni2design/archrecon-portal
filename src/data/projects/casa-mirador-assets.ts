@@ -40,11 +40,10 @@ export const CASA_MIRADOR_ASSETS: CasaMiradorAsset[] = [
     version: "v2",
     uploadedLabel: "Oct 12, 2025",
     viewer: {
-      breadcrumbLeaf: "Ground Floor Plan",
-      fileInfoName: "Ground Floor Plan",
-      typeLineLabel: "Floor Plans",
+      fileInfoName: "Front Exterior Render",
+      typeLineLabel: "Renders",
       description:
-        "Detailed ground floor architectural plan showing room layouts, dimensions, and structural elements.",
+        "Exterior render of Casa Mirador, showcasing the front facade.",
     },
   },
   {
@@ -111,9 +110,9 @@ export function getCasaMiradorAsset(assetId: string) {
 export const CASA_MIRADOR_RELATED_ROW_LABELS: Partial<
   Record<string, { title?: string; categoryLine: string }>
 > = {
-  "interior-courtyard": { categoryLine: "Sections" },
-  "interior-living-space": { categoryLine: "Floor Plans" },
-  "1st-floor-plan": { title: "First Floor Plan", categoryLine: "Renders" },
+  "interior-courtyard": { categoryLine: "Renders" },
+  "interior-living-space": { categoryLine: "Renders" },
+  "1st-floor-plan": { title: "First Floor Plan", categoryLine: "Floor Plans" },
 };
 
 const RELATED_PRIORITY = ["interior-courtyard", "interior-living-space", "1st-floor-plan"] as const;

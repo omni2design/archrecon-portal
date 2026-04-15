@@ -90,18 +90,18 @@ export default function RequestSubmittedContent() {
 
   return (
     <AppShell activeItem="requests">
-      <div className="-mx-8 -my-8 bg-[#fafafa] p-8 font-[family-name:var(--ar-font-family-body)]">
-        <div className="flex flex-col gap-8">
-          <div className="flex flex-col gap-0">
-              <h1 className="font-[family-name:var(--ar-font-family-heading)] text-[36px] font-medium leading-10 tracking-normal text-[#00162d]">
-                REQUEST SUBMITTED SUCCESSFULLY
-              </h1>
-              <p className="text-base font-medium leading-5 text-[#6f6f6f]">
-                Your project request has been received and ArchRecon will begin reviewing your submission shortly.
-              </p>
-          </div>
+      <div className="-mx-8 -my-8 bg-[#fafafa] font-[family-name:var(--ar-font-family-body)]">
+        <div className="flex flex-col">
+          <header className="w-full border-b border-[var(--ar-color-semantic-border-subtle,#d6d6d6)] bg-white px-[32px] py-[32px] text-center">
+            <h1 className="font-[family-name:var(--ar-font-family-heading)] text-[36px] font-medium leading-10 tracking-normal text-[#00162d]">
+              REQUEST SUBMITTED SUCCESSFULLY
+            </h1>
+            <p className="mt-0 text-base font-medium leading-5 text-[#6f6f6f]">
+              Your project request has been received and ArchRecon will begin reviewing your submission shortly.
+            </p>
+          </header>
 
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 p-8">
             <section className="w-full overflow-hidden rounded-[14px] border border-[#e5e5e5] bg-white">
               <div className="flex flex-col items-center gap-6 border-b border-[#e5e5e5] p-8">
                 <div className="flex h-[72px] w-full items-start justify-center">

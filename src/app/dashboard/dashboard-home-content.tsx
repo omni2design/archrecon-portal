@@ -238,6 +238,7 @@ function ServiceCard({
   statusTone,
   icon,
   actionHref,
+  demoHighlight = false,
 }: {
   title: string;
   description: string;
@@ -247,6 +248,8 @@ function ServiceCard({
   icon: React.ReactNode;
   /** When set, the CTA renders as a link (e.g. match sidebar Projects destination). */
   actionHref?: string;
+  /** Pink outline + \"Featured Demo\" preheader coach marker. */
+  demoHighlight?: boolean;
 }) {
   const statusClass =
     statusTone === "info"
@@ -266,7 +269,12 @@ function ServiceCard({
   );
 
   return (
-    <div className="flex min-h-[317px] min-w-0 flex-1 flex-col gap-4 rounded-2xl border border-[#e5e5e5] bg-white p-6 shadow-sm">
+    <div
+      className={[
+        "flex min-h-[317px] min-w-0 flex-1 flex-col gap-4 rounded-2xl border bg-white p-6 shadow-sm",
+        demoHighlight ? "border-[#f4038b]" : "border-[#e5e5e5]",
+      ].join(" ")}
+    >
       <div
         className="flex size-12 shrink-0 items-center justify-center rounded-[10px] px-3"
         style={{ backgroundImage: AR_BRAND_GRADIENT }}
@@ -282,9 +290,20 @@ function ServiceCard({
       </p>
 
       <div className="flex flex-col gap-2 border-t border-[#e5e5e5] pt-4">
-        <p className={`text-sm font-medium leading-5 ${statusClass}`}>
-          {status}
-        </p>
+        {demoHighlight ? (
+          <div className="flex flex-col items-start gap-2">
+            <span className="rounded-full border border-[#0053a7] bg-[#eff7ff] px-3 py-1 text-sm font-medium leading-5 text-[#002952]">
+              Featured Demo
+            </span>
+            <p className={`text-sm font-medium leading-5 ${statusClass}`}>
+              {status}
+            </p>
+          </div>
+        ) : (
+          <p className={`text-sm font-medium leading-5 ${statusClass}`}>
+            {status}
+          </p>
+        )}
         {actionHref ? (
           <Link
             href={actionHref}
@@ -429,13 +448,15 @@ function QuickAction({
 export function DashboardHomeContent() {
   return (
       <section className="flex flex-col gap-8 font-[family-name:var(--ar-font-family-body)]">
-        <div className="flex flex-col gap-0">
-          <h1 className="mb-0 font-[family-name:var(--ar-font-family-heading)] text-4xl font-medium leading-none tracking-normal text-[#00162d]">
-            Welcome back, John!
-          </h1>
-          <p className="mt-0 text-base font-medium leading-5 text-[var(--ar-text-muted)]">
-            You have 3 active projects and 2 pending deliverables
-          </p>
+        <div className="-mx-8 w-[calc(100%+64px)] border-b border-[#e5e5e5] bg-white px-8 py-8">
+          <div className="flex flex-col items-center gap-0 text-center">
+            <h1 className="mb-0 font-[family-name:var(--ar-font-family-heading)] text-4xl font-medium leading-10 tracking-normal text-[#00162d]">
+              WELCOME BACK, JOHN!
+            </h1>
+            <p className="mt-0 text-base font-medium leading-5 text-[#6f6f6f]">
+              You have 3 active projects and 2 pending deliverables
+            </p>
+          </div>
         </div>
 
         <div className="flex flex-col gap-4 lg:flex-row">
@@ -486,6 +507,7 @@ export function DashboardHomeContent() {
               statusTone="success"
               icon={<IconDrafting />}
               actionHref="/projects/casa-mirador"
+              demoHighlight
             />
             <ServiceCard
               title="3D Reality Capture"
