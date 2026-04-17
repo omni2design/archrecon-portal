@@ -27,6 +27,7 @@ body {
 
 body {
   min-height: 100vh;
+  -webkit-overflow-scrolling: touch;
 }
 
 a {

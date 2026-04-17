@@ -145,7 +145,7 @@ export default function LoginPage() {
       />
 
       <div
-        className={`relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-12 ${showOverlay ? "pointer-events-none" : ""}`}
+        className={`relative z-10 flex min-h-screen flex-col items-center justify-center px-6 py-12 ${showOverlay ? "pointer-events-none" : ""}`}
       >
         <div className="flex w-full max-w-[540px] flex-col gap-4">
           <div className="flex w-full justify-start">
@@ -166,7 +166,10 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="w-full rounded-2xl border border-[#e5e5e5] bg-white p-6 shadow-sm">
+          <div
+            className="w-full rounded-2xl border border-[#e5e5e5] bg-white p-6 shadow-sm"
+            style={{ padding: "24px" }}
+          >
             <div className="flex flex-col gap-8">
               <div className="flex w-full flex-col items-center gap-4">
                 <h1 className="w-full text-left font-[family-name:var(--ar-font-family-heading)] text-2xl font-medium leading-8 text-[#00162d]">

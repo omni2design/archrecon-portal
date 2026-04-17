@@ -31,9 +31,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${catamaran.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${catamaran.variable} ${geistMono.variable} min-h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full">
         <DemoBannerHost>{children}</DemoBannerHost>
       </body>
     </html>
