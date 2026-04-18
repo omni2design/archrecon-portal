@@ -1,6 +1,7 @@
 import AppShell from "@/components/layout/app-shell";
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
+import MobileProjects from "./mobile-projects";
 
 type ProjectStatusTone = "info" | "success" | "inProgress";
 
@@ -180,7 +181,13 @@ function FilterPill({ label }: { label: string }) {
 
 export default function ProjectsPage() {
   return (
-    <AppShell activeItem="projects">
+    <>
+      <div className="lg:hidden">
+        <MobileProjects />
+      </div>
+
+      <div className="hidden lg:block">
+        <AppShell activeItem="projects">
       <section className="w-full">
         <div className="-mx-8 -mt-8 border-b border-[#e5e5e5] bg-white">
           <div className="p-8">
@@ -287,6 +294,8 @@ export default function ProjectsPage() {
         </div>
         </div>
       </section>
-    </AppShell>
+        </AppShell>
+      </div>
+    </>
   );
 }

@@ -6,7 +6,8 @@
   --ar-font-family-ui: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --ar-font-family-body: var(--font-catamaran), ui-sans-serif, system-ui,
     sans-serif;
-  --ar-font-family-heading: "Nasalization", var(--font-catamaran),
+  /* next/font/local sets --font-nasalization on <html> (see layout.tsx). */
+  --ar-font-family-heading: var(--font-nasalization), var(--font-catamaran),
     ui-sans-serif, sans-serif;
 }
 

@@ -105,7 +105,7 @@ function MobileDashboardSkeleton() {
         className="fixed left-0 right-0 z-[9] p-6"
         style={{
           bottom:
-            "calc(24px + 56px + 24px + env(safe-area-inset-bottom, 0px))",
+            "calc(16px + 56px + 16px + env(safe-area-inset-bottom, 0px))",
           backgroundImage:
             "linear-gradient(to top, #ffffff 0%, rgba(255, 255, 255, 0) 100%)",
         }}
