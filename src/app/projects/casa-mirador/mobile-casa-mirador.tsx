@@ -6,6 +6,7 @@ import {
   MobileDashboardTop,
   MOBILE_PAGE_BG,
 } from "@/components/layout/mobile-portal-chrome";
+import { useMobileMainScrollPaddingStyle } from "@/components/layout/mobile-bottom-cta-behavior";
 import { CASA_MIRADOR_ASSETS } from "@/data/projects/casa-mirador-assets";
 import Image from "next/image";
 import Link from "next/link";
@@ -118,6 +119,7 @@ function MobileAssetCard({ asset }: { asset: Asset }) {
 }
 
 function MobileCasaMiradorContent() {
+  const mainScrollPad = useMobileMainScrollPaddingStyle();
   const [activeTab, setActiveTab] = useState<TabKey>("drafting-design");
   const [activeFilter, setActiveFilter] = useState<AssetCategory>("All");
 
@@ -188,7 +190,7 @@ function MobileCasaMiradorContent() {
         </div>
       </div>
 
-      <div className="px-6 pb-60 pt-6">
+      <div className="px-6 pt-6" style={mainScrollPad}>
         <div className="flex flex-col gap-4">
           <div className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {filterLabels.map((label) => (

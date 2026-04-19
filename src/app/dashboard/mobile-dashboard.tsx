@@ -6,6 +6,7 @@ import {
   MobileDashboardTop,
   MOBILE_PAGE_BG,
 } from "@/components/layout/mobile-portal-chrome";
+import { useMobileMainScrollPaddingStyle } from "@/components/layout/mobile-bottom-cta-behavior";
 import Link from "next/link";
 
 const MOBILE_BORDER = "#e5e5e5";
@@ -730,6 +731,7 @@ function MobileQuickAction({
 }
 
 function MobileDashboardContent() {
+  const mainScrollPad = useMobileMainScrollPaddingStyle();
   return (
     <div
       className="font-[family-name:var(--ar-font-family-body)]"
@@ -765,7 +767,7 @@ function MobileDashboardContent() {
         </div>
       </div>
 
-      <div className="px-6 pb-60 pt-6">
+      <div className="px-6 pt-6" style={mainScrollPad}>
         {/* Overview — Figma `2294:2284` (OverViewSection): 12px grid, five KPI cards + distinct well icons */}
         <section className="space-y-4">
           <MobileSectionHeading>OVERVIEW</MobileSectionHeading>

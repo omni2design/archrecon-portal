@@ -6,6 +6,7 @@ import {
   MobileDashboardTop,
   MOBILE_PAGE_BG,
 } from "@/components/layout/mobile-portal-chrome";
+import { useMobileFileViewerScrollPaddingStyle } from "@/components/layout/mobile-bottom-cta-behavior";
 import {
   CASA_MIRADOR_ASSETS,
   CASA_MIRADOR_RELATED_ROW_LABELS,
@@ -227,6 +228,8 @@ export default function MobileCasaMiradorFileViewer() {
     setAccordionOpen((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
+  const fileViewerScrollPad = useMobileFileViewerScrollPaddingStyle();
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: MOBILE_PAGE_BG }}>
       <MobileDashboardTop backHref="/projects/casa-mirador" backAriaLabel="Back to Casa Mirador" />
@@ -235,7 +238,7 @@ export default function MobileCasaMiradorFileViewer() {
         className="font-[family-name:var(--ar-font-family-body)]"
         style={{
           paddingTop: "calc(var(--ar-top-offset, 0px) + 72px)",
-          paddingBottom: "calc(320px + env(safe-area-inset-bottom, 0px))",
+          ...fileViewerScrollPad,
         }}
       >
         <div className="border-b border-[#e5e5e5] bg-white py-4">
@@ -426,7 +429,7 @@ export default function MobileCasaMiradorFileViewer() {
                 </button>
                 {accordionOpen.versionHistory ? (
                   <div className="mt-6 flex flex-col gap-3">
-                    <div className="flex h-[62px] items-center justify-between rounded-[10px] border border-[#e5e5e5] bg-[#fafafa] px-[13px]">
+                    <div className="flex h-[62px] items-center justify-between rounded-[10px] border border-[#e5e5e5] bg-white px-[13px]">
                       <div className="flex min-w-0 flex-1 flex-col">
                         <p
                           className="text-sm font-medium leading-5 text-[#00162d]"
@@ -450,7 +453,7 @@ export default function MobileCasaMiradorFileViewer() {
                         </span>
                       </div>
                     </div>
-                    <div className="flex h-[62px] items-center rounded-[10px] border border-[#e5e5e5] bg-[#fafafa] px-[13px]">
+                    <div className="flex h-[62px] items-center rounded-[10px] border border-[#e5e5e5] bg-white px-[13px]">
                       <div className="flex min-w-0 flex-1 flex-col">
                         <p
                           className="text-sm font-medium leading-5 text-[#00162d]"

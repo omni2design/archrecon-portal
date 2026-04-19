@@ -3,6 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  useInstallMobileBottomCtaScrollBehavior,
+  useMobileBottomCtaMotionStyle,
+  useMobileBottomCtaVisible,
+  useMobileReducedMotion,
+} from "@/components/layout/mobile-bottom-cta-behavior";
 
 /** Figma `2318:8564` PreviousButton — ArchRecon Portal Mobile Casa Mirador top nav (node `2318:8409`). */
 const MOBILE_PREVIOUS_BUTTON_IMG =
@@ -245,6 +251,10 @@ export function MobileDashboardTop(
 
 export function MobileBottomArea() {
   const pathname = usePathname();
+  const reducedMotion = useMobileReducedMotion();
+  useInstallMobileBottomCtaScrollBehavior(pathname, reducedMotion);
+  const ctaVisible = useMobileBottomCtaVisible();
+  const ctaStripMotion = useMobileBottomCtaMotionStyle(ctaVisible, reducedMotion);
   const isCasaMiradorFileViewer = pathname.startsWith("/projects/casa-mirador/files/");
   const isCasaMiradorProjectPage = pathname === "/projects/casa-mirador";
 
@@ -259,13 +269,16 @@ export function MobileBottomArea() {
     <>
       {/*
         BottomCTA: gradient; px-24 / py-16; sits above solid nav via MOBILE_BOTTOM_NAV_OFFSET.
+        Autohides on scroll down; returns on scroll up / idle (see mobile-bottom-cta-behavior).
       */}
       <div
         className="fixed left-0 right-0 z-[35] px-6 py-4"
+        aria-hidden={!ctaVisible && !reducedMotion}
         style={{
           bottom: MOBILE_BOTTOM_NAV_OFFSET,
           backgroundImage:
             "linear-gradient(to top, #ffffff 0%, rgba(255, 255, 255, 0) 100%)",
+          ...ctaStripMotion,
         }}
       >
         {isCasaMiradorFileViewer ? (

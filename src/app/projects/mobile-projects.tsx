@@ -6,6 +6,7 @@ import {
   MobileDashboardTop,
   MOBILE_PAGE_BG,
 } from "@/components/layout/mobile-portal-chrome";
+import { useMobileMainScrollPaddingStyle } from "@/components/layout/mobile-bottom-cta-behavior";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -250,6 +251,7 @@ const MOBILE_PROJECT_ROWS = [
 ];
 
 function MobileProjectsContent() {
+  const mainScrollPad = useMobileMainScrollPaddingStyle();
   return (
     <div
       className="font-[family-name:var(--ar-font-family-body)]"
@@ -278,7 +280,7 @@ function MobileProjectsContent() {
         </div>
       </div>
 
-      <div className="px-6 pb-60 pt-6">
+      <div className="px-6 pt-6" style={mainScrollPad}>
         <div className="flex flex-col gap-4">
           <div className="-mx-6 flex gap-6 overflow-x-auto px-6 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <div className="flex shrink-0 items-center gap-2">
