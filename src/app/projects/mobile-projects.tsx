@@ -4,13 +4,25 @@ import GlobalSearch from "@/components/search/global-search";
 import {
   MobileBottomArea,
   MobileDashboardTop,
+  MOBILE_BOTTOM_NAV_OFFSET,
   MOBILE_PAGE_BG,
 } from "@/components/layout/mobile-portal-chrome";
-import { useMobileMainScrollPaddingStyle } from "@/components/layout/mobile-bottom-cta-behavior";
 import Image from "next/image";
 import Link from "next/link";
 
 type ProjectStatusTone = "info" | "success" | "inProgress";
+
+/**
+ * Match Figma 1:1 scroll end spacing:
+ * When scrolled to bottom, the last card should sit 16px above the fixed CTA button.
+ *
+ * CTA layout in `MobileBottomArea`:
+ * - CTA wrapper uses `py-4` (16px) and the button is `h-12` (48px)
+ * - Wrapper sits above BottomNav via `MOBILE_BOTTOM_NAV_OFFSET`
+ * - So: bottom -> top-of-button = MOBILE_BOTTOM_NAV_OFFSET + 16px + 48px
+ * - Add desired 16px gap above button => +16px
+ */
+const MOBILE_PROJECTS_BOTTOM_PADDING = `calc(${MOBILE_BOTTOM_NAV_OFFSET} + 80px)`;
 
 const statusStyles: Record<
   ProjectStatusTone,
@@ -251,7 +263,6 @@ const MOBILE_PROJECT_ROWS = [
 ];
 
 function MobileProjectsContent() {
-  const mainScrollPad = useMobileMainScrollPaddingStyle();
   return (
     <div
       className="font-[family-name:var(--ar-font-family-body)]"
@@ -280,7 +291,7 @@ function MobileProjectsContent() {
         </div>
       </div>
 
-      <div className="px-6 pt-6" style={mainScrollPad}>
+      <div className="px-6 pt-6" style={{ paddingBottom: MOBILE_PROJECTS_BOTTOM_PADDING }}>
         <div className="flex flex-col gap-4">
           <div className="-mx-6 flex gap-6 overflow-x-auto px-6 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <div className="flex shrink-0 items-center gap-2">

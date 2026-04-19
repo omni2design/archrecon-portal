@@ -2,8 +2,13 @@
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
 
-/** Matches `pb-60` — space for gradient + CTA strip above bottom nav. */
-const MOBILE_MAIN_PAD_CTA_VISIBLE = "15rem";
+/**
+ * Space for gradient + CTA strip above bottom nav, plus a 16px visual buffer so
+ * the last card never tucks under the fixed CTA when fully scrolled.
+ *
+ * Historically this matched `pb-60` (15rem); we keep that baseline and add 16px.
+ */
+const MOBILE_MAIN_PAD_CTA_VISIBLE = "calc(15rem + 16px)";
 
 /**
  * When the CTA autohides, reserve only the fixed bottom nav stack + small buffer.

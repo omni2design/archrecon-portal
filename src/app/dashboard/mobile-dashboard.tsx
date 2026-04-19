@@ -4,13 +4,19 @@ import GlobalSearch from "@/components/search/global-search";
 import {
   MobileBottomArea,
   MobileDashboardTop,
+  MOBILE_BOTTOM_NAV_OFFSET,
   MOBILE_PAGE_BG,
 } from "@/components/layout/mobile-portal-chrome";
-import { useMobileMainScrollPaddingStyle } from "@/components/layout/mobile-bottom-cta-behavior";
 import Link from "next/link";
 
 const MOBILE_BORDER = "#e5e5e5";
 const MOBILE_SECONDARY_BLUE = "#003c79";
+
+/**
+ * Match the Request/Projects mobile behavior:
+ * when fully scrolled, the last content sits 16px above the fixed "+ New Project" CTA.
+ */
+const MOBILE_DASHBOARD_BOTTOM_PADDING = `calc(${MOBILE_BOTTOM_NAV_OFFSET} + 80px)`;
 
 /** Same gradient as desktop `RecentProjectCard` progress (`dashboard-home-content.tsx`). */
 const AR_PROGRESS_GRADIENT =
@@ -731,7 +737,6 @@ function MobileQuickAction({
 }
 
 function MobileDashboardContent() {
-  const mainScrollPad = useMobileMainScrollPaddingStyle();
   return (
     <div
       className="font-[family-name:var(--ar-font-family-body)]"
@@ -748,6 +753,7 @@ function MobileDashboardContent() {
             placeholder="Search projects..."
             iconSizePx={15}
             inputClassName="flex w-full min-w-0 items-center gap-2 rounded-[12px] bg-[#f5f5f5] px-4 py-2 text-sm text-[#6f6f6f]"
+            inputTextClassName="!text-[14px]"
           />
         </div>
       </div>
@@ -767,7 +773,7 @@ function MobileDashboardContent() {
         </div>
       </div>
 
-      <div className="px-6 pt-6" style={mainScrollPad}>
+      <div className="px-6 pt-6" style={{ paddingBottom: MOBILE_DASHBOARD_BOTTOM_PADDING }}>
         {/* Overview — Figma `2294:2284` (OverViewSection): 12px grid, five KPI cards + distinct well icons */}
         <section className="space-y-4">
           <MobileSectionHeading>OVERVIEW</MobileSectionHeading>

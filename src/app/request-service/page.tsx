@@ -1,6 +1,7 @@
 "use client";
 
 import AppShell from "@/components/layout/app-shell";
+import MobileRequestService from "./mobile-request-service";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
@@ -169,6 +170,22 @@ function IconArrowUpRight({ className }: { className?: string }) {
 }
 
 export default function RequestServicePage() {
+  return (
+    <>
+      {/* Mobile request service (true responsive screen) */}
+      <div className="lg:hidden">
+        <MobileRequestService />
+      </div>
+
+      {/* Desktop request service (existing sidebar + topbar layout) */}
+      <div className="hidden lg:block">
+        <RequestServiceDesktop />
+      </div>
+    </>
+  );
+}
+
+function RequestServiceDesktop() {
   const router = useRouter();
   const [selectedService, setSelectedService] = useState<ServiceId | null>(null);
   const [projectName, setProjectName] = useState("");

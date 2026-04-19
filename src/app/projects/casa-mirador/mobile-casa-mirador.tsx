@@ -4,9 +4,9 @@ import GlobalSearch from "@/components/search/global-search";
 import {
   MobileBottomArea,
   MobileDashboardTop,
+  MOBILE_BOTTOM_NAV_OFFSET,
   MOBILE_PAGE_BG,
 } from "@/components/layout/mobile-portal-chrome";
-import { useMobileMainScrollPaddingStyle } from "@/components/layout/mobile-bottom-cta-behavior";
 import { CASA_MIRADOR_ASSETS } from "@/data/projects/casa-mirador-assets";
 import Image from "next/image";
 import Link from "next/link";
@@ -21,6 +21,13 @@ type Asset = {
   category: Exclude<AssetCategory, "All">;
   imageUrl: string;
 };
+
+/**
+ * Ensure the last asset card clears the fixed "Download Full Package" CTA by 16px.
+ * CTA strip uses `py-4` (16px) and the button is `h-12` (48px), positioned above
+ * BottomNav by `MOBILE_BOTTOM_NAV_OFFSET`.
+ */
+const MOBILE_CASA_MIRADOR_BOTTOM_PADDING = `calc(${MOBILE_BOTTOM_NAV_OFFSET} + 80px)`;
 
 function ProjectTab({
   label,
@@ -119,7 +126,6 @@ function MobileAssetCard({ asset }: { asset: Asset }) {
 }
 
 function MobileCasaMiradorContent() {
-  const mainScrollPad = useMobileMainScrollPaddingStyle();
   const [activeTab, setActiveTab] = useState<TabKey>("drafting-design");
   const [activeFilter, setActiveFilter] = useState<AssetCategory>("All");
 
@@ -190,7 +196,7 @@ function MobileCasaMiradorContent() {
         </div>
       </div>
 
-      <div className="px-6 pt-6" style={mainScrollPad}>
+      <div className="px-6 pt-6" style={{ paddingBottom: MOBILE_CASA_MIRADOR_BOTTOM_PADDING }}>
         <div className="flex flex-col gap-4">
           <div className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {filterLabels.map((label) => (

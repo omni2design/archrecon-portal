@@ -3,6 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import {
   useInstallMobileBottomCtaScrollBehavior,
   useMobileBottomCtaMotionStyle,
@@ -89,8 +91,8 @@ function IconHome({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      width="22"
-      height="22"
+      width="20"
+      height="20"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -108,8 +110,8 @@ function IconFolder({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      width="22"
-      height="22"
+      width="20"
+      height="20"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -127,8 +129,8 @@ function IconPlus({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      width="22"
-      height="22"
+      width="20"
+      height="20"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -157,8 +159,8 @@ function IconDoc({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      width="22"
-      height="22"
+      width="20"
+      height="20"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -249,7 +251,10 @@ export function MobileDashboardTop(
   );
 }
 
-export function MobileBottomArea() {
+export function MobileBottomArea(
+  props: { cta?: ReactNode } = {},
+) {
+  const { cta } = props;
   const pathname = usePathname();
   const reducedMotion = useMobileReducedMotion();
   useInstallMobileBottomCtaScrollBehavior(pathname, reducedMotion);
@@ -257,15 +262,13 @@ export function MobileBottomArea() {
   const ctaStripMotion = useMobileBottomCtaMotionStyle(ctaVisible, reducedMotion);
   const isCasaMiradorFileViewer = pathname.startsWith("/projects/casa-mirador/files/");
   const isCasaMiradorProjectPage = pathname === "/projects/casa-mirador";
+  const [mounted, setMounted] = useState(false);
 
-  const items = [
-    { href: "/dashboard", label: "Dashboard", icon: <IconHome /> },
-    { href: "/projects", label: "Projects", icon: <IconFolder /> },
-    { href: "/request-service", label: "Requests", icon: <IconPlus /> },
-    { href: "/documents", label: "Documents", icon: <IconDoc /> },
-  ] as const;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  return (
+  const bottomUi = (
     <>
       {/*
         BottomCTA: gradient; px-24 / py-16; sits above solid nav via MOBILE_BOTTOM_NAV_OFFSET.
@@ -281,7 +284,9 @@ export function MobileBottomArea() {
           ...ctaStripMotion,
         }}
       >
-        {isCasaMiradorFileViewer ? (
+        {cta ? (
+          cta
+        ) : isCasaMiradorFileViewer ? (
           <div className="flex w-full flex-col gap-4">
             <button
               type="button"
@@ -336,39 +341,85 @@ export function MobileBottomArea() {
       {/*
         BottomNav: solid white, border-top; px-24, py-16 (+ safe-area on bottom).
       */}
-      <div
-        className="fixed bottom-0 left-0 right-0 z-40 border-t border-[#e5e5e5] bg-white px-6 pt-4"
-        style={{
-          paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))",
-        }}
-      >
-        <nav aria-label="Bottom navigation">
-          <div className="flex items-center justify-between">
-            {items.map((it) => {
-              const active =
-                it.href === "/projects"
-                  ? pathname === "/projects" ||
-                    pathname.startsWith("/projects/")
-                  : pathname === it.href;
-              const color = active ? MOBILE_PRIMARY_PINK : MOBILE_TEXT_MUTED;
+      <MobileBottomNav />
+    </>
+  );
+
+  // Render fixed mobile chrome at document root so it can't inherit any route-specific
+  // transforms/scales from page wrappers (which can visually "shrink" fixed UI).
+  return mounted ? createPortal(bottomUi, document.body) : null;
+}
+
+export function MobileBottomNav() {
+  const pathname = usePathname();
+
+  const items = [
+    { href: "/dashboard", label: "Dashboard", icon: <IconHome /> },
+    { href: "/projects", label: "Projects", icon: <IconFolder /> },
+    { href: "/request-service", label: "Requests", icon: <IconPlus /> },
+    { href: "/documents", label: "Documents", icon: <IconDoc /> },
+  ] as const;
+
+  return (
+    <div
+      className="fixed bottom-0 left-0 right-0 z-40 bg-white px-6 py-4"
+      style={{
+        borderTop: "0.615px solid #e5e5e5",
+        paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))",
+        WebkitTextSizeAdjust: "100%",
+        textSizeAdjust: "100%",
+      }}
+    >
+      <nav aria-label="Bottom navigation">
+        <div className="flex items-center justify-between">
+          {items.map((it) => {
+            const active =
+              it.href === "/projects"
+                ? pathname === "/projects" || pathname.startsWith("/projects/")
+                : pathname === it.href;
+            const color = active ? MOBILE_PRIMARY_PINK : MOBILE_TEXT_MUTED;
+            const disabled = it.href === "/documents";
+
+            const baseClassName =
+              "flex h-[56px] flex-col items-center rounded-[10px] px-3 pb-2 pt-2";
+            const labelEl = (
+              <div className="mt-1 text-[12px] font-medium leading-4">{it.label}</div>
+            );
+
+            if (disabled) {
               return (
-                <Link
+                <button
                   key={it.href}
-                  href={it.href}
-                  className="flex h-[56px] flex-col items-center justify-center gap-1 rounded-[10px] px-3"
-                  aria-current={active ? "page" : undefined}
-                  style={{ color }}
+                  type="button"
+                  disabled
+                  aria-disabled="true"
+                  className={`${baseClassName} cursor-not-allowed opacity-60`}
+                  style={{ color: MOBILE_TEXT_MUTED }}
                 >
                   <div aria-hidden className="size-5">
                     {it.icon}
                   </div>
-                  <div className="text-[12px] font-medium leading-4">{it.label}</div>
-                </Link>
+                  {labelEl}
+                </button>
               );
-            })}
-          </div>
-        </nav>
-      </div>
-    </>
+            }
+            return (
+              <Link
+                key={it.href}
+                href={it.href}
+                className={baseClassName}
+                aria-current={active ? "page" : undefined}
+                style={{ color }}
+              >
+                  <div aria-hidden className="size-5">
+                    {it.icon}
+                </div>
+                {labelEl}
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+    </div>
   );
 }

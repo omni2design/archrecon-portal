@@ -4,9 +4,9 @@ import GlobalSearch from "@/components/search/global-search";
 import {
   MobileBottomArea,
   MobileDashboardTop,
+  MOBILE_BOTTOM_NAV_OFFSET,
   MOBILE_PAGE_BG,
 } from "@/components/layout/mobile-portal-chrome";
-import { useMobileFileViewerScrollPaddingStyle } from "@/components/layout/mobile-bottom-cta-behavior";
 import {
   CASA_MIRADOR_ASSETS,
   CASA_MIRADOR_RELATED_ROW_LABELS,
@@ -113,6 +113,19 @@ const DEFAULT_ACCORDION: Record<AccordionId, boolean> = {
   versionHistory: false,
   relatedFiles: false,
 };
+
+/**
+ * Ensure the scrollable content clears the fixed two-button CTA stack on the file viewer
+ * by 16px (gap between content bottom and top of "Download Full Package" button).
+ *
+ * CTA stack in `MobileBottomArea` for file viewer:
+ * - Wrapper is positioned above BottomNav via `MOBILE_BOTTOM_NAV_OFFSET`
+ * - Wrapper uses `py-4` (16px top + 16px bottom)
+ * - Two buttons: `h-12` (48px) + `gap-4` (16px) + `h-12` (48px) = 112px
+ * - So: bottom -> top of first button = MOBILE_BOTTOM_NAV_OFFSET + 16 (wrapper bottom pad) + 112 (buttons+gap) + 16 (wrapper top pad)
+ * - Add desired 16px gap above button => +16px
+ */
+const MOBILE_FILE_VIEWER_BOTTOM_PADDING = `calc(${MOBILE_BOTTOM_NAV_OFFSET} + 160px)`;
 
 export default function MobileCasaMiradorFileViewer() {
   const params = useParams();
@@ -228,8 +241,6 @@ export default function MobileCasaMiradorFileViewer() {
     setAccordionOpen((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const fileViewerScrollPad = useMobileFileViewerScrollPaddingStyle();
-
   return (
     <div className="min-h-screen" style={{ backgroundColor: MOBILE_PAGE_BG }}>
       <MobileDashboardTop backHref="/projects/casa-mirador" backAriaLabel="Back to Casa Mirador" />
@@ -238,7 +249,7 @@ export default function MobileCasaMiradorFileViewer() {
         className="font-[family-name:var(--ar-font-family-body)]"
         style={{
           paddingTop: "calc(var(--ar-top-offset, 0px) + 72px)",
-          ...fileViewerScrollPad,
+          paddingBottom: MOBILE_FILE_VIEWER_BOTTOM_PADDING,
         }}
       >
         <div className="border-b border-[#e5e5e5] bg-white py-4">

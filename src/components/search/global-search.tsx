@@ -12,6 +12,8 @@ type GlobalSearchProps = {
   className?: string;
   /** Optional style variant for the input container. */
   inputClassName?: string;
+  /** Optional override for the input element's text sizing (defaults to `text-sm`). */
+  inputTextClassName?: string;
   /** Optional override for the search icon size (defaults to 26). */
   iconSizePx?: number;
   /** Optional class for the dropdown container. */
@@ -22,6 +24,7 @@ export default function GlobalSearch({
   placeholder = "Search projects, deliverables...",
   className,
   inputClassName,
+  inputTextClassName,
   iconSizePx = 26,
   dropdownClassName,
 }: GlobalSearchProps) {
@@ -111,7 +114,10 @@ export default function GlobalSearch({
             }}
             onFocus={() => setOpen(true)}
             placeholder={placeholder}
-            className="min-w-0 w-full bg-transparent font-[family-name:var(--ar-font-family-body)] text-sm font-normal leading-normal text-[#00162d] outline-none placeholder:text-[#6f6f6f] placeholder:leading-normal"
+            className={[
+              "min-w-0 w-full bg-transparent font-[family-name:var(--ar-font-family-body)] font-normal leading-normal text-[#00162d] outline-none placeholder:text-[#6f6f6f] placeholder:leading-normal",
+              inputTextClassName ?? "text-sm",
+            ].join(" ")}
             aria-label="Search projects and files"
           />
         </div>
