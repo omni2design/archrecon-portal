@@ -1,7 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
+/** Figma `2318:8564` PreviousButton — ArchRecon Portal Mobile Casa Mirador top nav (node `2318:8409`). */
+const MOBILE_PREVIOUS_BUTTON_IMG =
+  "https://www.figma.com/api/mcp/asset/e5a90f6b-ee69-4e3d-8392-a5a491e3610b";
 
 export const MOBILE_TOPNAV_BG = "#101039";
 export const MOBILE_PAGE_BG = "#fafafa";
@@ -12,6 +17,27 @@ export const MOBILE_TEXT_INVERSE = "#ffffff";
 /** Bottom nav stack height: pt-16 + row ~56 + pb-16 (+ safe-area on pb). */
 export const MOBILE_BOTTOM_NAV_OFFSET =
   "calc(16px + 56px + 16px + env(safe-area-inset-bottom, 0px))";
+
+function DownloadFullPackageIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden
+      className={className}
+      fill="none"
+      height="19"
+      viewBox="0 0 19 19"
+      width="19"
+    >
+      <path
+        d="M9.5 2.375v8.313m0 0 3.167-3.167M9.5 10.688 6.333 7.521M3.958 12.271v2.396c0 .875.709 1.583 1.584 1.583h7.916c.875 0 1.584-.708 1.584-1.583v-2.396"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.4"
+      />
+    </svg>
+  );
+}
 
 /** Same bell glyph as desktop `Topbar` (`topbar.tsx`); inverse color on mobile nav + matching unread badge. */
 function IconBell({ className }: { className?: string }) {
@@ -110,6 +136,17 @@ function IconPlus({ className }: { className?: string }) {
   );
 }
 
+function IconShareSmall({ className }: { className?: string }) {
+  return (
+    <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <circle cx="18" cy="5" r="3" stroke="currentColor" strokeWidth="2" />
+      <circle cx="6" cy="12" r="3" stroke="currentColor" strokeWidth="2" />
+      <circle cx="18" cy="19" r="3" stroke="currentColor" strokeWidth="2" />
+      <path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" stroke="currentColor" strokeWidth="2" />
+    </svg>
+  );
+}
+
 function IconDoc({ className }: { className?: string }) {
   return (
     <svg
@@ -131,7 +168,10 @@ function IconDoc({ className }: { className?: string }) {
   );
 }
 
-export function MobileDashboardTop() {
+export function MobileDashboardTop(
+  props: { backHref?: string; backAriaLabel?: string } = {},
+) {
+  const { backHref, backAriaLabel = "Back to Projects" } = props;
   return (
     <div
       className="fixed left-0 right-0 z-40"
@@ -144,18 +184,40 @@ export function MobileDashboardTop() {
           backgroundColor: MOBILE_TOPNAV_BG,
         }}
       >
-        <button
-          type="button"
-          aria-label="Notifications"
-          className="relative flex size-10 items-center justify-center rounded-[10px] transition"
-          style={{ color: MOBILE_TEXT_INVERSE }}
-        >
-          <IconBell />
-          <span
-            className="absolute right-[6px] top-[6px] size-2 rounded-full bg-[#f172ab]"
-            aria-hidden
-          />
-        </button>
+        {backHref ? (
+          <Link
+            href={backHref}
+            aria-label={backAriaLabel}
+            className="flex shrink-0 items-center justify-center"
+          >
+            <div className="flex-none rotate-180">
+              <div className="relative size-[40px]">
+                <Image
+                  alt=""
+                  className="pointer-events-none block max-w-none"
+                  draggable={false}
+                  fill
+                  sizes="40px"
+                  src={MOBILE_PREVIOUS_BUTTON_IMG}
+                  unoptimized
+                />
+              </div>
+            </div>
+          </Link>
+        ) : (
+          <button
+            type="button"
+            aria-label="Notifications"
+            className="relative flex size-10 items-center justify-center rounded-[10px] transition"
+            style={{ color: MOBILE_TEXT_INVERSE }}
+          >
+            <IconBell />
+            <span
+              className="absolute right-[6px] top-[6px] size-2 rounded-full bg-[#f172ab]"
+              aria-hidden
+            />
+          </button>
+        )}
 
         <div className="flex flex-1 items-center justify-center">
           <Link
@@ -183,6 +245,8 @@ export function MobileDashboardTop() {
 
 export function MobileBottomArea() {
   const pathname = usePathname();
+  const isCasaMiradorFileViewer = pathname.startsWith("/projects/casa-mirador/files/");
+  const isCasaMiradorProjectPage = pathname === "/projects/casa-mirador";
 
   const items = [
     { href: "/dashboard", label: "Dashboard", icon: <IconHome /> },
@@ -204,17 +268,56 @@ export function MobileBottomArea() {
             "linear-gradient(to top, #ffffff 0%, rgba(255, 255, 255, 0) 100%)",
         }}
       >
-        <Link
-          href="/request-service"
-          className="relative inline-flex h-12 w-full items-center justify-center rounded-full px-8 text-base font-medium !text-[#FFF8FC]"
-          style={{ backgroundColor: MOBILE_PRIMARY_PINK }}
-        >
-          + New Project
-          <span
-            className="absolute inset-0 rounded-full border border-white/50"
-            aria-hidden
-          />
-        </Link>
+        {isCasaMiradorFileViewer ? (
+          <div className="flex w-full flex-col gap-4">
+            <button
+              type="button"
+              className="relative inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--ar-color-semantic-button-primary)] px-8 font-[family-name:var(--ar-font-family-body)] text-base font-medium text-[var(--ar-color-semantic-button-primary-text)]"
+            >
+              <span className="relative z-[1] text-[16px] font-medium leading-[19.2px]">
+                Download Full Package
+              </span>
+              <DownloadFullPackageIcon className="relative z-[1] text-[var(--ar-color-semantic-button-primary-text)]" />
+              <span
+                className="pointer-events-none absolute inset-0 rounded-full border border-[color:var(--ar-color-semantic-button-primary-boarder)]"
+                aria-hidden
+              />
+            </button>
+            <button
+              type="button"
+              className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full border border-[#e5e5e5] bg-white px-8 text-sm font-medium text-[#00162d] font-[family-name:var(--ar-font-family-body)]"
+            >
+              Share
+              <IconShareSmall className="shrink-0 text-[#00162d]" />
+            </button>
+          </div>
+        ) : isCasaMiradorProjectPage ? (
+          <button
+            type="button"
+            className="relative inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--ar-color-semantic-button-primary)] px-8 font-[family-name:var(--ar-font-family-body)] text-base font-medium text-[var(--ar-color-semantic-button-primary-text)]"
+          >
+            <span className="relative z-[1] text-[16px] font-medium leading-[19.2px]">
+              Download Full Package
+            </span>
+            <DownloadFullPackageIcon className="relative z-[1] text-[var(--ar-color-semantic-button-primary-text)]" />
+            <span
+              className="pointer-events-none absolute inset-0 rounded-full border border-[color:var(--ar-color-semantic-button-primary-boarder)]"
+              aria-hidden
+            />
+          </button>
+        ) : (
+          <Link
+            href="/request-service"
+            className="relative inline-flex h-12 w-full items-center justify-center rounded-full px-8 text-base font-medium !text-[#FFF8FC]"
+            style={{ backgroundColor: MOBILE_PRIMARY_PINK }}
+          >
+            + New Project
+            <span
+              className="absolute inset-0 rounded-full border border-white/50"
+              aria-hidden
+            />
+          </Link>
+        )}
       </div>
 
       {/*

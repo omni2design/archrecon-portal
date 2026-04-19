@@ -745,28 +745,29 @@ function MobileDashboardContent() {
             className="w-full"
             placeholder="Search projects..."
             iconSizePx={15}
-            inputClassName="flex w-full items-center gap-2 rounded-[12px] bg-[#f5f5f5] px-4 py-2 text-sm text-[#6f6f6f]"
+            inputClassName="flex w-full min-w-0 items-center gap-2 rounded-[12px] bg-[#f5f5f5] px-4 py-2 text-sm text-[#6f6f6f]"
           />
         </div>
       </div>
 
-      {/* Welcome section */}
-      <div className="px-6 pb-60 pt-6">
-        <section className="space-y-4">
-          <div className="space-y-1">
+      {/* Figma `2318:8048` DashboardHeader — white strip: centered welcome + FeaturedDemoCard; border separates from #fafafa content */}
+      <div className="border-b bg-white px-6 py-6" style={{ borderColor: MOBILE_BORDER }}>
+        <div className="flex flex-col gap-4">
+          <div className="text-center">
             <h1 className="font-[family-name:var(--ar-font-family-heading)] text-[24px] font-medium leading-8 text-[#00162d]">
               Welcome back, John!
             </h1>
-            <p className="text-[16px] font-medium leading-5 text-[#6f6f6f]">
+            <p className="mt-1 text-[16px] font-medium leading-5 text-[#6f6f6f]">
               You have 3 active projects and 2 pending deliverables
             </p>
           </div>
-
           <FeaturedDemoCard />
-        </section>
+        </div>
+      </div>
 
+      <div className="px-6 pb-60 pt-6">
         {/* Overview — Figma `2294:2284` (OverViewSection): 12px grid, five KPI cards + distinct well icons */}
-        <section className="mt-16 space-y-4">
+        <section className="space-y-4">
           <MobileSectionHeading>OVERVIEW</MobileSectionHeading>
           <div className="grid grid-cols-2 gap-x-3 gap-y-3">
             <OverviewCard

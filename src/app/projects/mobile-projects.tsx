@@ -9,8 +9,6 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 
-const MOBILE_BORDER = "#e5e5e5";
-
 type ProjectStatusTone = "info" | "success" | "inProgress";
 
 const statusStyles: Record<
@@ -257,56 +255,53 @@ function MobileProjectsContent() {
       className="font-[family-name:var(--ar-font-family-body)]"
       style={{ backgroundColor: MOBILE_PAGE_BG }}
     >
-      <div
-        className="border-b py-4"
-        style={{ borderColor: MOBILE_BORDER, backgroundColor: "white" }}
-      >
+      <div className="border-b border-[#e5e5e5] bg-white py-4">
         <div className="px-6">
           <GlobalSearch
             className="w-full"
             placeholder="Search projects..."
             iconSizePx={15}
-            inputClassName="flex w-full items-center gap-2 rounded-[12px] bg-[#f5f5f5] px-4 py-2 text-sm text-[#6f6f6f]"
+            inputClassName="flex w-full min-w-0 items-center gap-2 rounded-[12px] bg-[#f5f5f5] px-4 py-2 text-sm text-[#6f6f6f]"
           />
         </div>
       </div>
 
+      <div className="border-b border-[#e5e5e5] bg-white px-6 py-6">
+        <div className="w-full text-center tracking-[0px]">
+          <h1 className="w-full font-[family-name:var(--ar-font-family-heading)] text-[24px] font-medium leading-[32px] text-[#00162d]">
+            Your Projects
+          </h1>
+          <p className="w-full text-[16px] font-medium leading-5 text-[#6f6f6f]">
+            View active and completed projects, track deliverables, and open project
+            workspaces.
+          </p>
+        </div>
+      </div>
+
       <div className="px-6 pb-60 pt-6">
-        <div className="flex flex-col gap-16">
-          <div className="flex w-full flex-col items-start text-left">
-            <h1 className="w-full font-[family-name:var(--ar-font-family-heading)] text-[24px] font-medium leading-[32px] tracking-[0px] text-[#00162d]">
-              Your Projects
-            </h1>
-            <p className="w-full text-[16px] font-medium leading-5 tracking-[0px] text-[#6f6f6f]">
-              View active and completed projects, track deliverables, and open project
-              workspaces.
-            </p>
+        <div className="flex flex-col gap-4">
+          <div className="-mx-6 flex gap-6 overflow-x-auto px-6 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex shrink-0 items-center gap-2">
+              <TogglePill label="All" active />
+              <TogglePill label="Active" />
+              <TogglePill label="Completed" />
+            </div>
+            <div
+              className="w-px shrink-0 self-stretch bg-[#e5e5e5]"
+              aria-hidden
+            />
+            <div className="flex shrink-0 items-center gap-2">
+              <FilterPill label="Floor Plans" />
+              <FilterPill label="As-Built" />
+              <FilterPill label="Design Sets" />
+              <FilterPill label="3D Scans" />
+            </div>
           </div>
 
           <div className="flex flex-col gap-4">
-            <div className="-mx-6 flex gap-6 overflow-x-auto px-6 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              <div className="flex shrink-0 items-center gap-2">
-                <TogglePill label="All" active />
-                <TogglePill label="Active" />
-                <TogglePill label="Completed" />
-              </div>
-              <div
-                className="w-px shrink-0 self-stretch bg-[#e5e5e5]"
-                aria-hidden
-              />
-              <div className="flex shrink-0 items-center gap-2">
-                <FilterPill label="Floor Plans" />
-                <FilterPill label="As-Built" />
-                <FilterPill label="Design Sets" />
-                <FilterPill label="3D Scans" />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              {MOBILE_PROJECT_ROWS.map((p) => (
-                <MobileProjectCard key={p.title} {...p} />
-              ))}
-            </div>
+            {MOBILE_PROJECT_ROWS.map((p) => (
+              <MobileProjectCard key={p.title} {...p} />
+            ))}
           </div>
         </div>
       </div>

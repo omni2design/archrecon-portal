@@ -5,6 +5,7 @@ import { CASA_MIRADOR_ASSETS } from "@/data/projects/casa-mirador-assets";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import MobileCasaMirador from "./mobile-casa-mirador";
 
 type TabKey = "overview" | "drafting-design" | "activity";
 type AssetCategory = "All" | "Renders" | "Site Plans" | "Floor Plans" | "Sections" | "Documents";
@@ -177,12 +178,18 @@ export default function CasaMiradorPage() {
   }, [activeFilter, assets]);
 
   return (
-    <AppShell activeItem="projects">
-      <div className="-mx-8 bg-[var(--ar-bg)]">
-        <section className="-mt-8 border-b border-[#e5e5e5] bg-white">
-          <div className="p-8">
-            <div className="flex flex-col items-center gap-2">
-              <div className="flex h-5 w-full items-center justify-center gap-[var(--ar-space-2)]">
+    <>
+      <div className="lg:hidden">
+        <MobileCasaMirador />
+      </div>
+
+      <div className="hidden lg:block">
+        <AppShell activeItem="projects">
+          <div className="-mx-8 bg-[var(--ar-bg)]">
+            <section className="-mt-8 border-b border-[#e5e5e5] bg-white">
+              <div className="p-8">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="flex h-5 w-full items-center justify-center gap-[var(--ar-space-2)]">
               <Link
                 className="text-sm font-medium [--crumb-color:#6F6F6F] text-[color:var(--crumb-color)] hover:[--crumb-color:#00162D] hover:underline"
                 href="/projects"
@@ -197,9 +204,9 @@ export default function CasaMiradorPage() {
               >
                 Casa Mirador
               </span>
-            </div>
+                  </div>
 
-              <div className="text-center">
+                  <div className="text-center">
               <h1
                 className="text-[36px] leading-[40px] text-[var(--ar-color-primary-800)]"
                 style={{ fontFamily: "var(--ar-font-family-heading)" }}
@@ -212,9 +219,9 @@ export default function CasaMiradorPage() {
               >
                 Passive Tropical Residence with Integrated Courtyard Landscape
               </p>
-            </div>
+                  </div>
 
-            <div className="flex w-full items-center justify-center">
+                  <div className="flex w-full items-center justify-center">
               <button
                 className="relative inline-flex h-12 items-center justify-center gap-[var(--ar-space-2)] rounded-full bg-[var(--ar-color-semantic-button-primary)] px-[var(--ar-space-8)] text-[var(--ar-color-semantic-button-primary-text)]"
                 style={{ fontFamily: "var(--ar-font-family-body)" }}
@@ -226,52 +233,54 @@ export default function CasaMiradorPage() {
                 <span className="absolute inset-0 rounded-full border border-[color:var(--ar-color-semantic-button-primary-boarder)]" />
                 <DownloadIcon className="relative text-[var(--ar-color-semantic-button-primary-text)]" />
               </button>
-            </div>
-          </div>
-          </div>
+                  </div>
+                </div>
+              </div>
 
-          <div className="flex items-center justify-center gap-[var(--ar-space-8)] border-b border-[#e5e5e5]">
-            <ProjectTab
-              isActive={activeTab === "overview"}
-              label="Overview"
-              onClick={() => setActiveTab("overview")}
-            />
-            <ProjectTab
-              isActive={activeTab === "drafting-design"}
-              label="Drafting & Design"
-              onClick={() => setActiveTab("drafting-design")}
-            />
-            <ProjectTab
-              isActive={activeTab === "activity"}
-              label="Activity"
-              onClick={() => setActiveTab("activity")}
-            />
-          </div>
-        </section>
-
-        <section className="px-[var(--ar-space-8)] pb-[var(--ar-space-8)] pt-[var(--ar-space-8)]">
-          <div className="mx-auto flex max-w-[1120px] flex-col items-center gap-[var(--ar-space-4)]">
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              {(
-                ["All", "Renders", "Site Plans", "Floor Plans", "Sections", "Documents"] as const
-              ).map((label) => (
-                <FilterChip
-                  key={label}
-                  isActive={activeFilter === label}
-                  label={label}
-                  onClick={() => setActiveFilter(label)}
+              <div className="flex items-center justify-center gap-[var(--ar-space-8)] border-b border-[#e5e5e5]">
+                <ProjectTab
+                  isActive={activeTab === "overview"}
+                  label="Overview"
+                  onClick={() => setActiveTab("overview")}
                 />
-              ))}
-            </div>
+                <ProjectTab
+                  isActive={activeTab === "drafting-design"}
+                  label="Drafting & Design"
+                  onClick={() => setActiveTab("drafting-design")}
+                />
+                <ProjectTab
+                  isActive={activeTab === "activity"}
+                  label="Activity"
+                  onClick={() => setActiveTab("activity")}
+                />
+              </div>
+            </section>
 
-            <div className="mt-2 grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {filteredAssets.map((asset) => (
-                <AssetCard key={`${asset.title}-${asset.category}`} asset={asset} />
-              ))}
-            </div>
+            <section className="px-[var(--ar-space-8)] pb-[var(--ar-space-8)] pt-[var(--ar-space-8)]">
+              <div className="mx-auto flex max-w-[1120px] flex-col items-center gap-[var(--ar-space-4)]">
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  {(
+                    ["All", "Renders", "Site Plans", "Floor Plans", "Sections", "Documents"] as const
+                  ).map((label) => (
+                    <FilterChip
+                      key={label}
+                      isActive={activeFilter === label}
+                      label={label}
+                      onClick={() => setActiveFilter(label)}
+                    />
+                  ))}
+                </div>
+
+                <div className="mt-2 grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  {filteredAssets.map((asset) => (
+                    <AssetCard key={`${asset.title}-${asset.category}`} asset={asset} />
+                  ))}
+                </div>
+              </div>
+            </section>
           </div>
-        </section>
+        </AppShell>
       </div>
-    </AppShell>
+    </>
   );
 }

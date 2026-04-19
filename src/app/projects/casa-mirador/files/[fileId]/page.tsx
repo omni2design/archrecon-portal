@@ -1,5 +1,6 @@
 import FileViewerCentered from "@/components/projects/file-viewer-centered";
 import AppShell from "@/components/layout/app-shell";
+import MobileCasaMiradorFileViewer from "../mobile-casa-mirador-file-viewer";
 import {
   CASA_MIRADOR_ASSETS,
   CASA_MIRADOR_RELATED_ROW_LABELS,
@@ -110,8 +111,14 @@ export default async function CasaMiradorFileViewerPage({
   const nextAsset = CASA_MIRADOR_ASSETS[currentIndex + 1] ?? null;
 
   return (
-    <AppShell activeItem="projects">
-      <div className="-mx-8 -my-8 min-h-[calc(100vh-5.0625rem)] bg-[#fafafa]">
+    <>
+      <div className="lg:hidden">
+        <MobileCasaMiradorFileViewer />
+      </div>
+
+      <div className="hidden lg:block">
+        <AppShell activeItem="projects">
+          <div className="-mx-8 -my-8 min-h-[calc(100vh-5.0625rem)] bg-[#fafafa]">
         <div className="border-b border-[#e5e5e5] bg-white">
           <div className="px-8 py-8">
             <div className="mx-auto flex w-full max-w-[1120px] flex-col items-center gap-2">
@@ -307,7 +314,9 @@ export default async function CasaMiradorFileViewerPage({
             </div>
           </div>
         </section>
+          </div>
+        </AppShell>
       </div>
-    </AppShell>
+    </>
   );
 }

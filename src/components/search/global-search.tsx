@@ -84,7 +84,7 @@ export default function GlobalSearch({
         <div
           className={
             inputClassName ??
-            "flex w-full items-center gap-3 rounded-full bg-[#f5f5f5] px-4 py-2 text-sm text-[#6f6f6f]"
+            "flex w-full min-w-0 items-center gap-3 rounded-full bg-[#f5f5f5] px-4 py-2 text-sm text-[#6f6f6f]"
           }
         >
           <svg
@@ -111,7 +111,7 @@ export default function GlobalSearch({
             }}
             onFocus={() => setOpen(true)}
             placeholder={placeholder}
-            className="w-full bg-transparent font-[family-name:var(--ar-font-family-body)] text-sm font-normal text-[#00162d] outline-none placeholder:text-[#6f6f6f]"
+            className="min-w-0 w-full bg-transparent font-[family-name:var(--ar-font-family-body)] text-sm font-normal leading-normal text-[#00162d] outline-none placeholder:text-[#6f6f6f] placeholder:leading-normal"
             aria-label="Search projects and files"
           />
         </div>
