@@ -2,16 +2,13 @@
 
 import AppShell from "@/components/layout/app-shell";
 import MobileRequestService from "./mobile-request-service";
-import Image from "next/image";
+import { UploadIcon } from "@/components/icons/upload-icon";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 
 /** Matches Figma multi-stop brand gradient on service icons. */
 const AR_BRAND_GRADIENT =
   "linear-gradient(135deg, rgb(127, 195, 232) 0%, rgb(140, 190, 228) 7.1429%, rgb(152, 186, 223) 14.286%, rgb(162, 181, 219) 21.429%, rgb(172, 176, 214) 28.571%, rgb(181, 170, 210) 35.714%, rgb(189, 165, 206) 42.857%, rgb(197, 160, 201) 50%, rgb(204, 154, 197) 57.143%, rgb(211, 148, 193) 64.286%, rgb(218, 142, 188) 71.429%, rgb(224, 135, 184) 78.571%, rgb(230, 129, 180) 85.714%, rgb(236, 122, 175) 92.857%, rgb(241, 114, 171) 100%)";
-
-const UPLOAD_ICON_URL =
-  "https://www.figma.com/api/mcp/asset/2adcd35a-8a3f-432c-b0e7-cc2f179d5aeb";
 
 type ServiceId = "floor-plans" | "as-built" | "drafting" | "reality-capture";
 
@@ -379,15 +376,7 @@ function RequestServiceDesktop() {
                         className="sr-only"
                         onChange={(e) => setUploadedFiles(Array.from(e.target.files ?? []))}
                       />
-                      <div className="relative size-12 shrink-0">
-                        <Image
-                          src={UPLOAD_ICON_URL}
-                          alt=""
-                          fill
-                          className="object-contain"
-                          unoptimized
-                        />
-                      </div>
+                      <UploadIcon className="size-12 shrink-0" />
                       <p className="text-center text-base font-medium leading-5 text-black">
                         Drag and drop files here or browse
                       </p>

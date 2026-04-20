@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# large image archives (keep optimized .webp in repo)
+/public/projects/archive/*.jpg

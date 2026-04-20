@@ -1,6 +1,7 @@
 "use client";
 
 import GlobalSearch from "@/components/search/global-search";
+import { UploadIcon } from "@/components/icons/upload-icon";
 import {
   MobileDashboardTop,
   MobileBottomArea,
@@ -8,7 +9,6 @@ import {
   MOBILE_PAGE_BG,
   MOBILE_PRIMARY_PINK,
 } from "@/components/layout/mobile-portal-chrome";
-import Image from "next/image";
 import { useCallback, useMemo, useState } from "react";
 
 const MOBILE_BORDER = "#e5e5e5";
@@ -29,10 +29,6 @@ const AR_BRAND_GRADIENT =
  * - Add desired 16px gap above button => +16px
  */
 const MOBILE_CONTENT_BOTTOM_PADDING = `calc(${MOBILE_BOTTOM_NAV_OFFSET} + 80px)`;
-
-/** Figma `2340:5226` Union (upload icon). */
-const MOBILE_UPLOAD_ICON_URL =
-  "https://www.figma.com/api/mcp/asset/b8d0e62d-21f3-491b-b9c1-ed6344c9554e";
 
 type ServiceId = "real-estate-plans" | "as-built" | "drafting" | "reality-capture";
 
@@ -394,9 +390,7 @@ export default function MobileRequestService() {
                     className="sr-only"
                     onChange={(e) => setUploadedFiles(Array.from(e.target.files ?? []))}
                   />
-                  <div className="relative size-10 shrink-0">
-                    <Image src={MOBILE_UPLOAD_ICON_URL} alt="" fill className="object-contain" unoptimized />
-                  </div>
+                  <UploadIcon className="size-10 shrink-0" />
                   <div className="space-y-0.5">
                     <p className="text-[16px] font-medium leading-5 text-black">Browse and Upload files here</p>
                     <p className="text-[14px] font-medium leading-5 text-[#999]">You can upload multiple files at once</p>

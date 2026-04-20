@@ -1,9 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import {
   useInstallMobileBottomCtaScrollBehavior,
@@ -12,15 +11,27 @@ import {
   useMobileReducedMotion,
 } from "@/components/layout/mobile-bottom-cta-behavior";
 
-/** Figma `2318:8564` PreviousButton — ArchRecon Portal Mobile Casa Mirador top nav (node `2318:8409`). */
-const MOBILE_PREVIOUS_BUTTON_IMG =
-  "https://www.figma.com/api/mcp/asset/e5a90f6b-ee69-4e3d-8392-a5a491e3610b";
-
 export const MOBILE_TOPNAV_BG = "#101039";
 export const MOBILE_PAGE_BG = "#fafafa";
 export const MOBILE_PRIMARY_PINK = "#f4038b";
 export const MOBILE_TEXT_MUTED = "#6f6f6f";
 export const MOBILE_TEXT_INVERSE = "#ffffff";
+
+const LG_UP_MEDIA_QUERY = "(min-width: 1024px)";
+
+function useIsLgUp() {
+  const [isLgUp, setIsLgUp] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia(LG_UP_MEDIA_QUERY);
+    const onChange = () => setIsLgUp(mq.matches);
+    onChange();
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  return isLgUp;
+}
 
 /** Bottom nav stack height: pt-16 + row ~56 + pb-16 (+ safe-area on pb). */
 export const MOBILE_BOTTOM_NAV_OFFSET =
@@ -42,6 +53,36 @@ function DownloadFullPackageIcon({ className }: { className?: string }) {
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth="1.4"
+      />
+    </svg>
+  );
+}
+
+function MobilePreviousButton() {
+  return (
+    <svg
+      width="40"
+      height="40"
+      viewBox="0 0 40 40"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <rect
+        x="40"
+        y="40"
+        width="40"
+        height="40"
+        rx="20"
+        transform="rotate(-180 40 40)"
+        fill="#EFF7FF"
+        fillOpacity="0.1"
+      />
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M20.5884 26.4201C20.263 26.7454 19.736 26.7454 19.4106 26.4201L13.5786 20.589C13.5582 20.5686 13.5389 20.5475 13.521 20.5255L13.478 20.4669C13.4623 20.4436 13.4475 20.4196 13.4341 20.3947C13.4267 20.3809 13.4202 20.3668 13.4136 20.3527C13.4086 20.342 13.4035 20.3314 13.3989 20.3205C13.2731 20.018 13.3327 19.6562 13.5786 19.4103L19.4106 13.5792C19.7359 13.2541 20.2631 13.2541 20.5884 13.5792C20.9137 13.9045 20.9136 14.4316 20.5884 14.757L16.1792 19.1681L25.8315 19.1681C26.2916 19.1681 26.6645 19.5411 26.6646 20.0011C26.6646 20.4612 26.2916 20.8341 25.8315 20.8341L16.1812 20.8341L20.5884 25.2423C20.9137 25.5676 20.9136 26.0947 20.5884 26.4201Z"
+        fill="white"
       />
     </svg>
   );
@@ -198,18 +239,8 @@ export function MobileDashboardTop(
             aria-label={backAriaLabel}
             className="flex shrink-0 items-center justify-center"
           >
-            <div className="flex-none rotate-180">
-              <div className="relative size-[40px]">
-                <Image
-                  alt=""
-                  className="pointer-events-none block max-w-none"
-                  draggable={false}
-                  fill
-                  sizes="40px"
-                  src={MOBILE_PREVIOUS_BUTTON_IMG}
-                  unoptimized
-                />
-              </div>
+            <div className="relative size-[40px]">
+              <MobilePreviousButton />
             </div>
           </Link>
         ) : (
@@ -255,6 +286,7 @@ export function MobileBottomArea(
   props: { cta?: ReactNode } = {},
 ) {
   const { cta } = props;
+  const isLgUp = useIsLgUp();
   const pathname = usePathname();
   const reducedMotion = useMobileReducedMotion();
   useInstallMobileBottomCtaScrollBehavior(pathname, reducedMotion);
@@ -267,6 +299,11 @@ export function MobileBottomArea(
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // This component renders via `createPortal(document.body)`. A parent `lg:hidden`
+  // wrapper does not prevent it from showing on desktop, so we hard-stop at lg+.
+  const enabledForViewport = useMemo(() => !isLgUp, [isLgUp]);
+  if (!enabledForViewport) return null;
 
   const bottomUi = (
     <>
