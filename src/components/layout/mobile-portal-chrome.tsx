@@ -413,7 +413,9 @@ export function MobileBottomNav() {
             const active =
               it.href === "/projects"
                 ? pathname === "/projects" || pathname.startsWith("/projects/")
-                : pathname === it.href;
+                : it.href === "/request-service"
+                  ? pathname === "/request-service" || pathname === "/request-submitted"
+                  : pathname === it.href;
             const color = active ? MOBILE_PRIMARY_PINK : MOBILE_TEXT_MUTED;
             const disabled = it.href === "/documents";
 

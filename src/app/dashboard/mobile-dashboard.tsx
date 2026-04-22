@@ -202,7 +202,7 @@ function MobileServiceCard({
   return (
     <div
       className={[
-        "rounded-[10px] border bg-white p-4 shadow-sm",
+        "rounded-[10px] border bg-white p-6 shadow-sm",
         demoHighlight ? "border-[#f4038b]" : "border-[#e5e5e5]",
       ].join(" ")}
     >
@@ -503,7 +503,7 @@ function MobileRecentProjectCard({
   return (
     <Link
       href={href}
-      className="flex w-full flex-col gap-3 rounded-[10px] border border-[#e5e5e5] bg-white p-4"
+      className="flex w-full flex-col gap-3 rounded-[10px] border border-[#e5e5e5] bg-white p-6"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
@@ -777,7 +777,7 @@ function MobileDashboardContent() {
         {/* Overview — Figma `2294:2284` (OverViewSection): 12px grid, five KPI cards + distinct well icons */}
         <section className="space-y-4">
           <MobileSectionHeading>OVERVIEW</MobileSectionHeading>
-          <div className="grid grid-cols-2 gap-x-3 gap-y-3">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-4">
             <OverviewCard
               label="Active Projects"
               value="3"
@@ -820,7 +820,7 @@ function MobileDashboardContent() {
             </Link>
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             <MobileServiceCard
               title="Real Estate Floor Plans"
               description="Professional 2D floor plans for listings and marketing"
@@ -866,7 +866,7 @@ function MobileDashboardContent() {
               View All
             </Link>
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-4">
             <MobileRecentProjectCard
               name="Williams Avenue Residence"
               location="Los Angeles, CA"

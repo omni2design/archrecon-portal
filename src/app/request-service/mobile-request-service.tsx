@@ -9,6 +9,7 @@ import {
   MOBILE_PAGE_BG,
   MOBILE_PRIMARY_PINK,
 } from "@/components/layout/mobile-portal-chrome";
+import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 
 const MOBILE_BORDER = "#e5e5e5";
@@ -30,7 +31,7 @@ const AR_BRAND_GRADIENT =
  */
 const MOBILE_CONTENT_BOTTOM_PADDING = `calc(${MOBILE_BOTTOM_NAV_OFFSET} + 80px)`;
 
-type ServiceId = "real-estate-plans" | "as-built" | "drafting" | "reality-capture";
+type ServiceId = "floor-plans" | "as-built" | "drafting" | "reality-capture";
 
 type Service = {
   id: ServiceId;
@@ -155,8 +156,8 @@ function IconRealityCapture() {
 
 const SERVICES: Service[] = [
   {
-    id: "real-estate-plans",
-    title: "Real Estate Plans",
+    id: "floor-plans",
+    title: "Real Estate Floor Plans",
     description: "Professional 2D floor plans with measurements and room labels",
     icon: <IconFloorPlan />,
   },
@@ -211,6 +212,7 @@ function IconArrowUpRight({ className }: { className?: string }) {
 }
 
 export default function MobileRequestService() {
+  const router = useRouter();
   const [selectedService, setSelectedService] = useState<ServiceId | null>(null);
   const [projectName, setProjectName] = useState("");
   const [propertyAddress, setPropertyAddress] = useState("");
@@ -236,6 +238,29 @@ export default function MobileRequestService() {
   const onPickService = useCallback((id: ServiceId) => {
     setSelectedService((prev) => (prev === id ? null : id));
   }, []);
+
+  const onSubmit = useCallback(() => {
+    if (!submitEnabled) return;
+
+    const params = new URLSearchParams();
+    if (selectedService) params.set("service", selectedService);
+    if (projectName.trim()) params.set("projectName", projectName.trim());
+    if (propertyAddress.trim()) params.set("propertyAddress", propertyAddress.trim());
+    if (projectType.trim()) params.set("projectType", projectType.trim());
+    if (uploadedFiles.length) params.set("files", String(uploadedFiles.length));
+    if (notes.trim()) params.set("notes", notes.trim());
+
+    router.push(`/request-submitted?${params.toString()}`);
+  }, [
+    notes,
+    projectName,
+    projectType,
+    propertyAddress,
+    router,
+    selectedService,
+    submitEnabled,
+    uploadedFiles.length,
+  ]);
 
   return (
     <div
@@ -311,7 +336,7 @@ export default function MobileRequestService() {
               <h2 className="font-[family-name:var(--ar-font-family-heading)] text-[20px] font-medium leading-6 text-[#00162d]">
                 PROJECT DETAILS
               </h2>
-              <div className="rounded-[16px] border bg-white p-8" style={{ borderColor: MOBILE_BORDER }}>
+              <div className="rounded-[16px] border bg-white p-6" style={{ borderColor: MOBILE_BORDER }}>
                 <div className="space-y-6">
                   <div className="space-y-2">
                     <RequiredLabel>Project Name</RequiredLabel>
@@ -378,7 +403,7 @@ export default function MobileRequestService() {
               <h2 className="font-[family-name:var(--ar-font-family-heading)] text-[20px] font-medium leading-6 text-[#00162d]">
                 UPLOAD FILES
               </h2>
-              <div className="rounded-[14px] border bg-white p-8" style={{ borderColor: MOBILE_BORDER }}>
+              <div className="rounded-[14px] border bg-white p-6" style={{ borderColor: MOBILE_BORDER }}>
                 <p className="text-[14px] font-medium leading-5 text-[#6f6f6f]">
                   Accepted formats: PDF, JPG, PNG, DWG, DXF, RVT, SKP (Max 50MB per file)
                 </p>
@@ -450,7 +475,7 @@ export default function MobileRequestService() {
               <h2 className="font-[family-name:var(--ar-font-family-heading)] text-[20px] font-medium leading-6 text-[#00162d]">
                 REVIEW &amp; SUBMIT
               </h2>
-              <div className="rounded-[14px] border bg-white p-8" style={{ borderColor: MOBILE_BORDER }}>
+              <div className="rounded-[14px] border bg-white p-6" style={{ borderColor: MOBILE_BORDER }}>
                 <div className="rounded-[10px] bg-[#fafafa] p-6">
                   <div className="space-y-3">
                     <div className="space-y-1">
@@ -498,6 +523,7 @@ export default function MobileRequestService() {
           <button
             type="button"
             disabled={!submitEnabled}
+            onClick={onSubmit}
             className={[
               "relative flex h-12 w-full items-center justify-center gap-1.5 rounded-full px-8 text-[16px] font-medium leading-[19.2px] transition",
               submitEnabled

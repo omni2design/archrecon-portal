@@ -2,11 +2,7 @@
 
 import AppShell from "@/components/layout/app-shell";
 import { useRouter, useSearchParams } from "next/navigation";
-import Image from "next/image";
 import { useMemo } from "react";
-
-const CHECK_ICON_URL =
-  "https://www.figma.com/api/mcp/asset/69a22e41-6c89-41de-9617-842fcd12eb1f";
 
 type ServiceId = "floor-plans" | "as-built" | "drafting" | "reality-capture";
 
@@ -68,6 +64,25 @@ function StatusPill({ children }: { children: React.ReactNode }) {
   );
 }
 
+function GreenCheckIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="65"
+      height="65"
+      viewBox="0 0 65 65"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <path
+        d="M27.2311 0.392837C34.5176 -0.755023 41.9776 0.63032 48.3668 4.31667C49.4431 4.93766 49.8119 6.31361 49.191 7.38991C48.5699 8.46612 47.1941 8.83513 46.1178 8.21413C40.6201 5.04224 34.201 3.85045 27.9313 4.83815C21.6613 5.826 15.9189 8.93397 11.6627 13.6428C7.40661 18.3517 4.89381 24.3776 4.54258 30.7151C4.19144 37.0527 6.02322 43.3197 9.73301 48.47C13.4429 53.6202 18.8069 57.3424 24.9293 59.0169C31.0517 60.6913 37.563 60.2165 43.3775 57.6712C49.1922 55.1258 53.9583 50.6638 56.8814 45.0296C59.8045 39.3953 60.7083 32.9288 59.441 26.7092C59.1935 25.4921 59.9789 24.3042 61.1959 24.0559C62.4133 23.8079 63.6017 24.5936 63.8502 25.8108C65.323 33.0388 64.2735 40.554 60.8766 47.1018C57.4795 53.6498 51.9398 58.835 45.1822 61.7932C38.4246 64.7514 30.8572 65.3037 23.7418 63.3577C16.6266 61.4116 10.3931 57.0853 6.08164 51.0999C1.77025 45.1144 -0.358672 37.8314 0.0494183 30.4661C0.457607 23.1008 3.37849 16.0977 8.32481 10.6253C13.2712 5.15292 19.9444 1.54086 27.2311 0.392837ZM60.652 6.67018C61.5306 5.79151 62.9549 5.79152 63.8336 6.67018C64.7123 7.54886 64.7123 8.97314 63.8336 9.85182L33.8336 39.8518C32.9549 40.7303 31.5306 40.7304 30.652 39.8518L21.652 30.8518C20.7734 29.9732 20.7734 28.5489 21.652 27.6702C22.5306 26.7915 23.9549 26.7915 24.8336 27.6702L32.2428 35.0794L60.652 6.67018Z"
+        fill="#1FAD75"
+      />
+    </svg>
+  );
+}
+
 export default function RequestSubmittedContent() {
   const router = useRouter();
   const params = useSearchParams();
@@ -105,9 +120,7 @@ export default function RequestSubmittedContent() {
             <section className="w-full overflow-hidden rounded-[14px] border border-[#e5e5e5] bg-white">
               <div className="flex flex-col items-center gap-6 border-b border-[#e5e5e5] p-8">
                 <div className="flex h-[72px] w-full items-start justify-center">
-                  <div className="relative size-[64.5px]">
-                    <Image src={CHECK_ICON_URL} alt="" fill className="object-contain" unoptimized />
-                  </div>
+                  <GreenCheckIcon className="size-[64.5px]" />
                 </div>
                 <p className="max-w-[415px] text-center text-base font-medium leading-5 text-black">
                   Thank you for your submission. A member of our team will review your request and contact you within 1 business day.
