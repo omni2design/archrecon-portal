@@ -9,6 +9,7 @@ import {
 } from "@/components/layout/mobile-portal-chrome";
 import Image from "next/image";
 import Link from "next/link";
+import { useMemo, useState } from "react";
 
 type ProjectStatusTone = "info" | "success" | "inProgress";
 
@@ -54,14 +55,18 @@ function TogglePill({
   label,
   active = false,
   className,
+  onClick,
 }: {
   label: string;
   active?: boolean;
   className?: string;
+  onClick?: () => void;
 }) {
   return (
     <button
       type="button"
+      onClick={onClick}
+      aria-pressed={active}
       className={[
         "inline-flex h-[38px] shrink-0 items-center justify-center whitespace-nowrap rounded-[48px] border px-[16px] py-[8px] font-[family-name:var(--ar-font-family-body)] text-sm font-medium leading-[20px] transition",
         active
@@ -223,18 +228,18 @@ const MOBILE_PROJECT_ROWS = [
     title: "Estrella Avenue Residence",
     location: "Piedmont, CA",
     deliverable: "As-Built Documentation",
-    statusLabel: "In-Progress",
-    statusTone: "inProgress" as const,
+    statusLabel: "Active",
+    statusTone: "info" as const,
     fileCountLabel: "10 Files",
     href: "#",
     imageSrc: "/projects/project-estrella.jpg",
   },
   {
     title: "Casa Mirador",
-    location: "Merida, Mexico",
+    location: "Chakabamba, Peru",
     deliverable: "Drafting & Design",
     statusLabel: "Featured Demo",
-    statusTone: "info" as const,
+    statusTone: "inProgress" as const,
     fileCountLabel: "10 Files",
     href: "/projects/casa-mirador",
     imageSrc: "/projects/project-casa-mirador.jpg",
@@ -244,7 +249,7 @@ const MOBILE_PROJECT_ROWS = [
     title: "Harbor Point Office Suite",
     location: "Oakland, CA",
     deliverable: "3D Reality Capture",
-    statusLabel: "Scans Ready",
+    statusLabel: "Completed",
     statusTone: "success" as const,
     fileCountLabel: "2 Files",
     href: "#",
@@ -254,8 +259,8 @@ const MOBILE_PROJECT_ROWS = [
     title: "Redwood Commons Retail",
     location: "San Jose, CA",
     deliverable: "3D Reality Capture",
-    statusLabel: "Processing",
-    statusTone: "inProgress" as const,
+    statusLabel: "Active",
+    statusTone: "info" as const,
     fileCountLabel: "3 Files",
     href: "#",
     imageSrc: "/projects/project-redwood-commons.jpg",
@@ -263,6 +268,15 @@ const MOBILE_PROJECT_ROWS = [
 ];
 
 function MobileProjectsContent() {
+  const [statusFilter, setStatusFilter] = useState<
+    "All" | (typeof MOBILE_PROJECT_ROWS)[number]["statusLabel"]
+  >("All");
+
+  const visibleProjects = useMemo(() => {
+    if (statusFilter === "All") return MOBILE_PROJECT_ROWS;
+    return MOBILE_PROJECT_ROWS.filter((p) => p.statusLabel === statusFilter);
+  }, [statusFilter]);
+
   return (
     <div
       className="font-[family-name:var(--ar-font-family-body)]"
@@ -295,9 +309,26 @@ function MobileProjectsContent() {
         <div className="flex flex-col gap-4">
           <div className="-mx-6 flex gap-6 overflow-x-auto px-6 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <div className="flex shrink-0 items-center gap-2">
-              <TogglePill label="All" active />
-              <TogglePill label="Active" />
-              <TogglePill label="Completed" />
+              <TogglePill
+                label="All"
+                active={statusFilter === "All"}
+                onClick={() => setStatusFilter("All")}
+              />
+              <TogglePill
+                label="Active"
+                active={statusFilter === "Active"}
+                onClick={() => setStatusFilter("Active")}
+              />
+              <TogglePill
+                label="Completed"
+                active={statusFilter === "Completed"}
+                onClick={() => setStatusFilter("Completed")}
+              />
+              <TogglePill
+                label="Featured Demo"
+                active={statusFilter === "Featured Demo"}
+                onClick={() => setStatusFilter("Featured Demo")}
+              />
             </div>
             <div
               className="w-px shrink-0 self-stretch bg-[#e5e5e5]"
@@ -312,7 +343,7 @@ function MobileProjectsContent() {
           </div>
 
           <div className="flex flex-col gap-4">
-            {MOBILE_PROJECT_ROWS.map((p) => (
+            {visibleProjects.map((p) => (
               <MobileProjectCard key={p.title} {...p} />
             ))}
           </div>

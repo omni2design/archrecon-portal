@@ -36,7 +36,7 @@ export const DEMO_PROJECTS: DemoProject[] = [
   {
     id: "casa-mirador",
     title: "Casa Mirador",
-    location: "Merida, Mexico",
+    location: "Chakabamba, Peru",
     deliverable: "Drafting & Design",
     href: "/projects/casa-mirador",
   },

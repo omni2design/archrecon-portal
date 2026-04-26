@@ -185,7 +185,7 @@ function MobileCasaMiradorContent() {
           />
           <ProjectTab
             isActive={activeTab === "drafting-design"}
-            label="Drafting & Design"
+            label="Files"
             onClick={() => setActiveTab("drafting-design")}
           />
           <ProjectTab

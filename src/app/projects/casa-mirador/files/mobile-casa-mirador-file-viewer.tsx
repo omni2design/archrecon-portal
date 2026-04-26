@@ -271,14 +271,10 @@ export default function MobileCasaMiradorFileViewer() {
             {asset.title}
           </h1>
           <div
-            className="mt-1 flex flex-wrap items-center justify-center gap-1 text-sm font-medium leading-5 text-[#6f6f6f]"
+            className="mt-1 flex flex-wrap items-center justify-center gap-1 text-base font-medium leading-5 text-[#6f6f6f]"
             style={{ fontFamily: "var(--ar-font-family-body)" }}
           >
             <span>Type: {typeLineLabel}</span>
-            <span className="font-normal" aria-hidden>
-              •
-            </span>
-            <span>Version: {version}</span>
             <span className="font-normal" aria-hidden>
               •
             </span>

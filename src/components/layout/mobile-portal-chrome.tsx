@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -10,6 +10,10 @@ import {
   useMobileBottomCtaVisible,
   useMobileReducedMotion,
 } from "@/components/layout/mobile-bottom-cta-behavior";
+import { CasaMiradorPackageReadyDialog } from "@/components/projects/casa-mirador/package-ready-dialog";
+import { CasaMiradorShareDialog } from "@/components/projects/casa-mirador/share-dialog";
+import { CASA_MIRADOR_ASSETS } from "@/data/projects/casa-mirador-assets";
+import { DEMO_ENTRY_STORAGE_KEY } from "@/lib/demo-entry-storage";
 
 export const MOBILE_TOPNAV_BG = "#101039";
 export const MOBILE_PAGE_BG = "#fafafa";
@@ -217,68 +221,407 @@ function IconDoc({ className }: { className?: string }) {
   );
 }
 
+function IconActivity({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 6v6l4 2" />
+    </svg>
+  );
+}
+
+function IconInvoices({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1Z" />
+      <path d="M8 7h8M8 11h8M8 15h5" />
+    </svg>
+  );
+}
+
+function IconSettings({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="12" cy="12" r="3" />
+      <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+    </svg>
+  );
+}
+
+function IconUser({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M20 21a8 8 0 0 0-16 0" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  );
+}
+
+function MobileOverlay({
+  isOpen,
+  onClose,
+  children,
+  position = "bottom",
+  ariaLabel,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  children: ReactNode;
+  position?: "bottom" | "right";
+  ariaLabel: string;
+}) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isOpen, onClose]);
+
+  if (!mounted || !isOpen) return null;
+
+  const panelBase =
+    "pointer-events-auto w-full bg-white shadow-[0_18px_48px_rgba(0,0,0,0.24)]";
+  const panelClassName =
+    position === "right"
+      ? `${panelBase} h-full max-w-[320px] rounded-l-[24px]`
+      : `${panelBase} rounded-t-[24px]`;
+
+  const panelStyle =
+    position === "right"
+      ? { transform: "translate3d(0,0,0)" }
+      : { transform: "translate3d(0,0,0)" };
+
+  const root = (
+    <div className="fixed inset-0 z-[60]" role="dialog" aria-modal="true" aria-label={ariaLabel}>
+      <button
+        type="button"
+        className="absolute inset-0 bg-black/40"
+        aria-label="Close"
+        onClick={onClose}
+      />
+      <div
+        className={[
+          "pointer-events-none absolute inset-0 flex",
+          position === "right" ? "justify-end" : "items-end",
+        ].join(" ")}
+      >
+        <div className={panelClassName} style={panelStyle}>
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+
+  return createPortal(root, document.body);
+}
+
 export function MobileDashboardTop(
   props: { backHref?: string; backAriaLabel?: string } = {},
 ) {
   const { backHref, backAriaLabel = "Back to Projects" } = props;
+  const pathname = usePathname();
+  const router = useRouter();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [notificationsUnread, setNotificationsUnread] = useState(true);
+
+  useEffect(() => {
+    setMenuOpen(false);
+    setNotificationsOpen(false);
+  }, [pathname]);
+
+  function logOut() {
+    try {
+      sessionStorage.removeItem(DEMO_ENTRY_STORAGE_KEY);
+    } catch {
+      /* storage blocked */
+    }
+    setMenuOpen(false);
+    setNotificationsOpen(false);
+    router.push("/");
+  }
+
   return (
-    <div
-      className="fixed left-0 right-0 z-40"
-      style={{ top: "var(--ar-top-offset,0px)" }}
-    >
-      {/* TopNavArchRecon layer (72px) */}
+    <>
       <div
-        className="flex h-[72px] items-center justify-between px-6"
-        style={{
-          backgroundColor: MOBILE_TOPNAV_BG,
-        }}
+        className="fixed left-0 right-0 z-40"
+        style={{ top: "var(--ar-top-offset,0px)" }}
       >
-        {backHref ? (
-          <Link
-            href={backHref}
-            aria-label={backAriaLabel}
-            className="flex shrink-0 items-center justify-center"
-          >
-            <div className="relative size-[40px]">
-              <MobilePreviousButton />
-            </div>
-          </Link>
-        ) : (
+        {/* TopNavArchRecon layer (72px) */}
+        <div
+          className="flex h-[72px] items-center justify-between px-6"
+          style={{
+            backgroundColor: MOBILE_TOPNAV_BG,
+          }}
+        >
+          {backHref ? (
+            <Link
+              href={backHref}
+              aria-label={backAriaLabel}
+              className="flex shrink-0 items-center justify-center"
+            >
+              <div className="relative size-[40px]">
+                <MobilePreviousButton />
+              </div>
+            </Link>
+          ) : (
+            <button
+              type="button"
+              aria-label="Notifications"
+              className="relative flex size-10 items-center justify-center rounded-[10px] transition"
+              style={{ color: MOBILE_TEXT_INVERSE }}
+              onClick={() => {
+                setMenuOpen(false);
+                setNotificationsOpen(true);
+                setNotificationsUnread(false);
+              }}
+            >
+              <IconBell />
+              {notificationsUnread ? (
+                <span
+                  className="absolute right-[6px] top-[6px] size-2 rounded-full bg-[#f172ab]"
+                  aria-hidden
+                />
+              ) : null}
+            </button>
+          )}
+
+          <div className="flex flex-1 items-center justify-center">
+            <Link
+              href="/"
+              aria-label="ArchRecon — go to login"
+              className="font-[family-name:var(--ar-font-family-heading)] text-[24px] font-medium leading-8 tracking-normal !text-[#FFFFFF] hover:!text-[#FFFFFF]"
+              style={{ color: "#FFFFFF" }}
+            >
+              ArchRecon
+            </Link>
+          </div>
+
           <button
             type="button"
-            aria-label="Notifications"
-            className="relative flex size-10 items-center justify-center rounded-[10px] transition"
+            aria-label="Menu"
+            aria-expanded={menuOpen}
+            className="flex size-10 items-center justify-center rounded-[10px] transition"
             style={{ color: MOBILE_TEXT_INVERSE }}
+            onClick={() => {
+              setNotificationsOpen(false);
+              setMenuOpen(true);
+            }}
           >
-            <IconBell />
-            <span
-              className="absolute right-[6px] top-[6px] size-2 rounded-full bg-[#f172ab]"
-              aria-hidden
-            />
+            <IconMenu className="size-5" />
           </button>
-        )}
-
-        <div className="flex flex-1 items-center justify-center">
-          <Link
-            href="/"
-            aria-label="ArchRecon — go to login"
-            className="font-[family-name:var(--ar-font-family-heading)] text-[24px] font-medium leading-8 tracking-normal !text-[#FFFFFF] hover:!text-[#FFFFFF]"
-            style={{ color: "#FFFFFF" }}
-          >
-            ArchRecon
-          </Link>
         </div>
-
-        <button
-          type="button"
-          aria-label="Menu"
-          className="flex size-10 items-center justify-center rounded-[10px] transition"
-          style={{ color: MOBILE_TEXT_INVERSE }}
-        >
-          <IconMenu className="size-5" />
-        </button>
       </div>
-    </div>
+
+      <MobileOverlay
+        isOpen={notificationsOpen}
+        onClose={() => setNotificationsOpen(false)}
+        position="bottom"
+        ariaLabel="Notifications"
+      >
+        <div className="px-6 pb-6 pt-5">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="text-[16px] font-semibold leading-5 text-[#00162d]">
+              Notifications
+            </div>
+            <button
+              type="button"
+              className="rounded-full border border-[#e5e5e5] bg-white px-3 py-1.5 text-[12px] font-medium text-[#00162d] transition hover:bg-[#f8fafc]"
+              onClick={() => setNotificationsOpen(false)}
+            >
+              Close
+            </button>
+          </div>
+          <div className="rounded-2xl border border-[#e5e5e5] bg-[#fafafa] p-4">
+            <p className="text-[14px] font-medium leading-5 text-[#00162d]">
+              You’re all caught up
+            </p>
+            <p className="mt-1 text-[12px] leading-4 text-[#6f6f6f]">
+              This MVP demo doesn’t generate live notifications yet.
+            </p>
+          </div>
+        </div>
+      </MobileOverlay>
+
+      <MobileOverlay
+        isOpen={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        position="right"
+        ariaLabel="Menu"
+      >
+        <div className="flex h-full flex-col">
+          <div className="flex items-center justify-between px-6 pb-4 pt-5">
+            <div className="text-[16px] font-semibold leading-5 text-[#00162d]">
+              Menu
+            </div>
+            <button
+              type="button"
+              className="rounded-full border border-[#e5e5e5] bg-white px-3 py-1.5 text-[12px] font-medium text-[#00162d] transition hover:bg-[#f8fafc]"
+              onClick={() => setMenuOpen(false)}
+            >
+              Close
+            </button>
+          </div>
+
+          <div className="px-4">
+            <div className="rounded-2xl border border-[#e5e5e5] bg-white p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[linear-gradient(135deg,#b9d5ff,#f7a8d8)] text-xs font-semibold text-[#334155]">
+                  JD
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[14px] font-semibold leading-5 text-[#00162d]">
+                    John Doe
+                  </p>
+                  <p className="truncate text-[12px] leading-4 text-[#6f6f6f]">
+                    john@company.com
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-4 flex flex-col gap-2">
+                <button
+                  type="button"
+                  disabled
+                  aria-disabled="true"
+                  className="flex h-11 w-full items-center gap-3 rounded-full px-4 text-left text-[14px] font-medium text-[#949799]"
+                  title="Not included in current demo"
+                >
+                  <IconUser className="size-5 shrink-0 text-[#949799]" />
+                  Profile
+                  <span className="ml-auto rounded-full border border-[#e5e5e5] bg-white px-2 py-0.5 text-[10px] font-medium text-[#949799]">
+                    Coming soon
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  className="flex h-11 w-full items-center justify-center rounded-full border border-[#e5e5e5] bg-white px-4 text-[14px] font-medium text-[#00162d] transition hover:bg-[#f8fafc]"
+                  onClick={logOut}
+                >
+                  Log Out
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="px-4 pt-4">
+            <div className="mb-2 px-2 text-[12px] font-medium leading-4 text-[#6f6f6f]">
+              More
+            </div>
+            <nav className="flex flex-col gap-2" aria-label="More">
+              <button
+                type="button"
+                disabled
+                aria-disabled="true"
+                className="flex h-11 items-center gap-3 rounded-full px-4 text-left text-[14px] font-medium text-[#949799]"
+                title="Not included in current demo"
+              >
+                <IconActivity className="size-5 shrink-0 text-[#949799]" />
+                Activity
+                <span className="ml-auto rounded-full border border-[#e5e5e5] bg-white px-2 py-0.5 text-[10px] font-medium text-[#949799]">
+                  Coming soon
+                </span>
+              </button>
+
+              <button
+                type="button"
+                disabled
+                aria-disabled="true"
+                className="flex h-11 items-center gap-3 rounded-full px-4 text-left text-[14px] font-medium text-[#949799]"
+                title="Not included in current demo"
+              >
+                <IconInvoices className="size-5 shrink-0 text-[#949799]" />
+                Invoices
+                <span className="ml-auto rounded-full border border-[#e5e5e5] bg-white px-2 py-0.5 text-[10px] font-medium text-[#949799]">
+                  Coming soon
+                </span>
+              </button>
+
+              <button
+                type="button"
+                disabled
+                aria-disabled="true"
+                className="flex h-11 items-center gap-3 rounded-full px-4 text-left text-[14px] font-medium text-[#949799]"
+                title="Not included in current demo"
+              >
+                <IconSettings className="size-5 shrink-0 text-[#949799]" />
+                Settings
+                <span className="ml-auto rounded-full border border-[#e5e5e5] bg-white px-2 py-0.5 text-[10px] font-medium text-[#949799]">
+                  Coming soon
+                </span>
+              </button>
+            </nav>
+          </div>
+
+          <div className="mt-auto p-6">
+            <button
+              type="button"
+              className="inline-flex h-12 w-full items-center justify-center rounded-full px-8 text-[16px] font-medium leading-[19.2px] text-[#FFF8FC]"
+              style={{ backgroundColor: MOBILE_PRIMARY_PINK }}
+              onClick={() => {
+                setMenuOpen(false);
+                router.push("/request-service");
+              }}
+            >
+              + New Project
+            </button>
+          </div>
+        </div>
+      </MobileOverlay>
+    </>
   );
 }
 
@@ -288,6 +631,7 @@ export function MobileBottomArea(
   const { cta } = props;
   const isLgUp = useIsLgUp();
   const pathname = usePathname();
+  const router = useRouter();
   const reducedMotion = useMobileReducedMotion();
   useInstallMobileBottomCtaScrollBehavior(pathname, reducedMotion);
   const ctaVisible = useMobileBottomCtaVisible();
@@ -295,6 +639,20 @@ export function MobileBottomArea(
   const isCasaMiradorFileViewer = pathname.startsWith("/projects/casa-mirador/files/");
   const isCasaMiradorProjectPage = pathname === "/projects/casa-mirador";
   const [mounted, setMounted] = useState(false);
+  const [isPackageDialogOpen, setIsPackageDialogOpen] = useState(false);
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+
+  const casaMiradorFileId = useMemo(() => {
+    if (!isCasaMiradorFileViewer) return null;
+    const parts = pathname.split("/").filter(Boolean);
+    const fileId = parts[parts.length - 1] ?? null;
+    return fileId || null;
+  }, [isCasaMiradorFileViewer, pathname]);
+
+  const casaMiradorFileTitle = useMemo(() => {
+    if (!casaMiradorFileId) return "File";
+    return CASA_MIRADOR_ASSETS.find((a) => a.id === casaMiradorFileId)?.title ?? "File";
+  }, [casaMiradorFileId]);
 
   useEffect(() => {
     setMounted(true);
@@ -328,6 +686,7 @@ export function MobileBottomArea(
             <button
               type="button"
               className="relative inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--ar-color-semantic-button-primary)] px-8 font-[family-name:var(--ar-font-family-body)] text-base font-medium text-[var(--ar-color-semantic-button-primary-text)]"
+              onClick={() => setIsPackageDialogOpen(true)}
             >
               <span className="relative z-[1] text-[16px] font-medium leading-[19.2px]">
                 Download Full Package
@@ -341,6 +700,7 @@ export function MobileBottomArea(
             <button
               type="button"
               className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full border border-[#e5e5e5] bg-white px-8 text-sm font-medium text-[#00162d] font-[family-name:var(--ar-font-family-body)]"
+              onClick={() => setIsShareDialogOpen(true)}
             >
               Share
               <IconShareSmall className="shrink-0 text-[#00162d]" />
@@ -350,6 +710,7 @@ export function MobileBottomArea(
           <button
             type="button"
             className="relative inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--ar-color-semantic-button-primary)] px-8 font-[family-name:var(--ar-font-family-body)] text-base font-medium text-[var(--ar-color-semantic-button-primary-text)]"
+            onClick={() => setIsPackageDialogOpen(true)}
           >
             <span className="relative z-[1] text-[16px] font-medium leading-[19.2px]">
               Download Full Package
@@ -374,6 +735,25 @@ export function MobileBottomArea(
           </Link>
         )}
       </div>
+
+      {isCasaMiradorProjectPage || isCasaMiradorFileViewer ? (
+        <CasaMiradorPackageReadyDialog
+          isOpen={isPackageDialogOpen}
+          onClose={() => setIsPackageDialogOpen(false)}
+          onViewFiles={() => {
+            router.push("/projects/casa-mirador");
+          }}
+        />
+      ) : null}
+
+      {isCasaMiradorFileViewer && casaMiradorFileId ? (
+        <CasaMiradorShareDialog
+          isOpen={isShareDialogOpen}
+          onClose={() => setIsShareDialogOpen(false)}
+          fileTitle={casaMiradorFileTitle}
+          sharePath={`/projects/casa-mirador/files/${casaMiradorFileId}`}
+        />
+      ) : null}
 
       {/*
         BottomNav: solid white, border-top; px-24, py-16 (+ safe-area on bottom).

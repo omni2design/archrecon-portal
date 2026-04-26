@@ -1,6 +1,11 @@
+"use client";
+
 import type { ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useId, useRef, useState } from "react";
+import { DEMO_ENTRY_STORAGE_KEY } from "@/lib/demo-entry-storage";
 
 type SidebarProps = {
   activeItem?:
@@ -150,12 +155,35 @@ function NavButton({
   label,
   icon,
   active = false,
+  disabled = false,
+  disabledHint = "Not included in current demo",
 }: {
   href: string;
   label: string;
   icon: ReactNode;
   active?: boolean;
+  disabled?: boolean;
+  disabledHint?: string;
 }) {
+  if (disabled) {
+    return (
+      <div
+        className={[
+          "group flex h-10 w-full items-center gap-3 rounded-full pl-4 pr-3 text-left text-sm font-medium",
+          "text-[#949799] cursor-default select-none",
+        ].join(" ")}
+        aria-disabled="true"
+        title={disabledHint}
+      >
+        {icon}
+        <span>{label}</span>
+        <span className="ml-auto rounded-full border border-[#e5e5e5] bg-white px-2 py-0.5 text-[10px] font-medium text-[#949799] opacity-0 transition-opacity group-hover:opacity-100">
+          Coming soon
+        </span>
+      </div>
+    );
+  }
+
   return (
     <Link
       href={href}
@@ -173,13 +201,53 @@ function NavButton({
 }
 
 export default function Sidebar({ activeItem = "dashboard" }: SidebarProps) {
+  const router = useRouter();
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const accountMenuId = useId();
+  const accountMenuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!accountMenuOpen) return;
+
+    function onPointerDown(e: PointerEvent) {
+      const root = accountMenuRef.current;
+      if (!root) return;
+      if (e.target instanceof Node && !root.contains(e.target)) {
+        setAccountMenuOpen(false);
+      }
+    }
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setAccountMenuOpen(false);
+    }
+
+    window.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [accountMenuOpen]);
+
+  function logOut() {
+    try {
+      sessionStorage.removeItem(DEMO_ENTRY_STORAGE_KEY);
+    } catch {
+      /* storage blocked */
+    }
+    setAccountMenuOpen(false);
+    router.push("/");
+  }
+
   return (
     <aside className="fixed left-0 top-[var(--ar-top-offset,0px)] z-30 flex h-[calc(100vh-var(--ar-top-offset,0px))] w-[270px] flex-col border-r border-[#e5e5e5] bg-white">
       <div>
-        <Link
-          href="/"
+        <a
+          href="https://www.archreconstudio.com/"
+          target="_blank"
+          rel="noreferrer noopener"
           className="flex h-[81px] items-center gap-3 border-b border-[var(--ar-color-semantic-border-subtle)] px-5 transition hover:bg-[#f8fafc]"
-          aria-label="ArchRecon — go to login"
+          aria-label="ArchRecon — open marketing website"
         >
           <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full bg-[var(--ar-secondary)]">
             <Image
@@ -194,7 +262,7 @@ export default function Sidebar({ activeItem = "dashboard" }: SidebarProps) {
           <div className="font-[family-name:var(--ar-font-family-heading)] text-[22px] font-medium tracking-tight text-[#00162d]">
             ArchRecon
           </div>
-        </Link>
+        </a>
 
         <nav className="px-4 py-8" aria-label="Main">
           <div className="flex flex-col gap-2">
@@ -214,16 +282,16 @@ export default function Sidebar({ activeItem = "dashboard" }: SidebarProps) {
             <NavDivider />
 
             <NavButton
-              href="#"
               label="Documents"
               icon={<IconDocuments />}
-              active={activeItem === "documents"}
+              href=""
+              disabled
             />
             <NavButton
-              href="#"
               label="Activity"
               icon={<IconActivity />}
-              active={activeItem === "activity"}
+              href=""
+              disabled
             />
 
             <NavDivider />
@@ -235,34 +303,98 @@ export default function Sidebar({ activeItem = "dashboard" }: SidebarProps) {
               active={activeItem === "requests"}
             />
             <NavButton
-              href="#"
               label="Invoices"
               icon={<IconInvoices />}
-              active={activeItem === "invoices"}
+              href=""
+              disabled
             />
 
             <NavDivider />
 
             <NavButton
-              href="#"
               label="Settings"
               icon={<IconSettings />}
-              active={activeItem === "settings"}
+              href=""
+              disabled
             />
           </div>
         </nav>
       </div>
 
       <div className="mt-auto border-t border-[#e5e5e5] p-4">
-        <div className="flex items-center gap-3 rounded-2xl bg-[#f8fafc] p-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[linear-gradient(135deg,#b9d5ff,#f7a8d8)] text-xs font-semibold text-[#334155]">
-            JD
-          </div>
+        <div className="relative" ref={accountMenuRef}>
+          {accountMenuOpen ? (
+            <div
+              id={accountMenuId}
+              role="menu"
+              aria-label="Account menu"
+              className="absolute bottom-[calc(100%+10px)] left-0 w-full overflow-hidden rounded-2xl border border-[#e5e5e5] bg-white shadow-[0_12px_32px_rgba(0,0,0,0.12)]"
+            >
+              <div className="px-3 py-2">
+                <p className="text-xs font-medium text-[#00162d]">Signed in as</p>
+                <p className="text-xs text-[#6f6f6f]">john@company.com</p>
+              </div>
+              <div className="h-px bg-[#e5e5e5]" role="separator" />
+              <div className="p-2">
+                <button
+                  type="button"
+                  role="menuitem"
+                  disabled
+                  aria-disabled="true"
+                  className="flex h-9 w-full cursor-default items-center rounded-xl px-3 text-left text-sm font-medium text-[#949799]"
+                  title="Coming soon"
+                >
+                  Profile
+                </button>
+                <div className="my-2 h-px bg-[#e5e5e5]" role="separator" />
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={logOut}
+                  className="flex h-9 w-full items-center rounded-xl px-3 text-left text-sm font-medium text-[#00162d] transition hover:bg-[#f8fafc]"
+                >
+                  Log Out
+                </button>
+              </div>
+            </div>
+          ) : null}
 
-          <div>
-            <p className="text-sm font-medium text-[#00162d]">John Doe</p>
-            <p className="text-xs text-[#6f6f6f]">john@company.com</p>
-          </div>
+          <button
+            type="button"
+            className={[
+              "flex w-full items-center gap-3 rounded-2xl bg-[#f8fafc] p-3 text-left transition",
+              "hover:bg-[#f1f5f9]",
+            ].join(" ")}
+            onClick={() => setAccountMenuOpen((v) => !v)}
+            aria-haspopup="menu"
+            aria-expanded={accountMenuOpen}
+            aria-controls={accountMenuId}
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[linear-gradient(135deg,#b9d5ff,#f7a8d8)] text-xs font-semibold text-[#334155]">
+              JD
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-[#00162d]">John Doe</p>
+              <p className="truncate text-xs text-[#6f6f6f]">john@company.com</p>
+            </div>
+
+            <svg
+              className={[
+                "size-4 shrink-0 text-[#6f6f6f] transition-transform",
+                accountMenuOpen ? "rotate-180" : "rotate-0",
+              ].join(" ")}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
         </div>
       </div>
     </aside>

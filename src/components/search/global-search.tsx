@@ -64,7 +64,7 @@ export default function GlobalSearch({
 
     const files = CASA_MIRADOR_ASSETS.filter((a) => {
       const hay =
-        `${a.title} ${a.category} Casa Mirador Merida Mexico Drafting Design deliverable file`.toLowerCase();
+        `${a.title} ${a.category} Casa Mirador Chakabamba Peru Drafting Design deliverable file`.toLowerCase();
       return hay.includes(q);
     })
       .slice(0, 8)

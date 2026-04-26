@@ -1,6 +1,9 @@
+ "use client";
+
 import AppShell from "@/components/layout/app-shell";
 import Image from "next/image";
 import Link from "next/link";
+import { useMemo, useState } from "react";
 import MobileProjects from "./mobile-projects";
 
 type ProjectStatusTone = "info" | "success" | "inProgress";
@@ -30,6 +33,82 @@ const ICON_LOCATION = "/icons/icon-location.svg";
 const ICON_DELIVERABLE = "/icons/icon-deliverable.svg";
 const ICON_FILTER = "/icons/icon-filter.svg";
 const ICON_ARROW = "/icons/icon-arrow.svg";
+
+type ProjectRow = {
+  title: string;
+  location: string;
+  deliverable: string;
+  statusLabel: "Active" | "Completed" | "Featured Demo";
+  statusTone: ProjectStatusTone;
+  fileCountLabel: string;
+  href: string;
+  imageSrc: string;
+  highlighted?: boolean;
+};
+
+const PROJECT_ROWS: ProjectRow[] = [
+  {
+    title: "Williams Avenue Residence",
+    location: "Larkspur, CA",
+    deliverable: "Real Estate Floor Plans",
+    statusLabel: "Active",
+    statusTone: "info",
+    fileCountLabel: "1 File",
+    href: "#",
+    imageSrc: "/projects/project-williams.jpg",
+  },
+  {
+    title: "Pico Avenue Residence",
+    location: "San Francisco, CA",
+    deliverable: "Real Estate Floor Plans",
+    statusLabel: "Completed",
+    statusTone: "success",
+    fileCountLabel: "1 File",
+    href: "#",
+    imageSrc: "/projects/project-pico.jpg",
+  },
+  {
+    title: "Estrella Avenue Residence",
+    location: "Piedmont, CA",
+    deliverable: "As-Built Documentation",
+    statusLabel: "Active",
+    statusTone: "info",
+    fileCountLabel: "10 Files",
+    href: "#",
+    imageSrc: "/projects/project-estrella.jpg",
+  },
+  {
+    title: "Casa Mirador",
+    location: "Chakabamba, Peru",
+    deliverable: "Drafting & Design",
+    statusLabel: "Featured Demo",
+    statusTone: "inProgress",
+    fileCountLabel: "10 Files",
+    href: "/projects/casa-mirador",
+    imageSrc: "/projects/project-casa-mirador.jpg",
+    highlighted: true,
+  },
+  {
+    title: "Harbor Point Office Suite",
+    location: "Oakland, CA",
+    deliverable: "3D Reality Capture",
+    statusLabel: "Completed",
+    statusTone: "success",
+    fileCountLabel: "2 Files",
+    href: "#",
+    imageSrc: "/projects/project-harbor-point.jpg",
+  },
+  {
+    title: "Redwood Commons Retail",
+    location: "San Jose, CA",
+    deliverable: "3D Reality Capture",
+    statusLabel: "Active",
+    statusTone: "info",
+    fileCountLabel: "3 Files",
+    href: "#",
+    imageSrc: "/projects/project-redwood-commons.jpg",
+  },
+];
 
 function ProjectCard({
   title,
@@ -139,17 +218,21 @@ function ProjectCard({
 function TogglePill({
   label,
   active = false,
+  onClick,
   className,
 }: {
   label: string;
   active?: boolean;
+  onClick?: () => void;
   className?: string;
 }) {
   return (
     <button
       type="button"
+      onClick={onClick}
+      aria-pressed={active}
       className={[
-        "inline-flex h-[38px] items-center justify-center whitespace-nowrap rounded-[48px] border px-[16px] py-[8px] font-[family-name:var(--ar-font-family-body)] text-sm font-medium leading-[20px] transition",
+        "inline-flex h-[38px] shrink-0 items-center justify-center whitespace-nowrap rounded-[48px] border px-[16px] py-[8px] font-[family-name:var(--ar-font-family-body)] text-sm font-medium leading-[20px] transition",
         active
           ? "border-transparent bg-[#003c79] text-white"
           : "border-[#d6d6d6] bg-white text-[#6f6f6f] hover:bg-[#f8fafc]",
@@ -165,7 +248,7 @@ function FilterPill({ label }: { label: string }) {
   return (
     <button
       type="button"
-      className="inline-flex h-[38px] items-center justify-center gap-2 rounded-[48px] border border-[#d6d6d6] bg-white px-[16px] py-[8px] font-[family-name:var(--ar-font-family-body)] text-sm font-medium leading-[20px] text-[#6f6f6f] transition hover:bg-[#f8fafc]"
+      className="inline-flex h-[38px] shrink-0 items-center justify-center gap-2 rounded-[48px] border border-[#d6d6d6] bg-white px-[16px] py-[8px] font-[family-name:var(--ar-font-family-body)] text-sm font-medium leading-[20px] text-[#6f6f6f] transition hover:bg-[#f8fafc]"
     >
       <Image
         src={ICON_FILTER}
@@ -180,6 +263,15 @@ function FilterPill({ label }: { label: string }) {
 }
 
 export default function ProjectsPage() {
+  const [statusFilter, setStatusFilter] = useState<
+    "All" | ProjectRow["statusLabel"]
+  >("All");
+
+  const visibleProjects = useMemo(() => {
+    if (statusFilter === "All") return PROJECT_ROWS;
+    return PROJECT_ROWS.filter((p) => p.statusLabel === statusFilter);
+  }, [statusFilter]);
+
   return (
     <>
       <div className="lg:hidden">
@@ -211,86 +303,61 @@ export default function ProjectsPage() {
 
         <div className="-mx-8 bg-[#fafafa] p-8">
           <div className="flex flex-col items-center gap-6">
-            <div className="flex w-full items-start justify-center">
-              <div className="inline-flex items-center gap-2">
-                <TogglePill label="All" active className="shrink-0" />
-                <TogglePill label="Active" className="shrink-0" />
-                <TogglePill label="Completed" className="shrink-0" />
-              </div>
+            <div className="-mx-8 w-[calc(100%+64px)] overflow-x-auto px-8 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div className="mx-auto flex w-max items-center gap-6">
+                <div className="flex shrink-0 items-center gap-2">
+                  <TogglePill
+                    label="All"
+                    active={statusFilter === "All"}
+                    onClick={() => setStatusFilter("All")}
+                  />
+                  <TogglePill
+                    label="Active"
+                    active={statusFilter === "Active"}
+                    onClick={() => setStatusFilter("Active")}
+                  />
+                  <TogglePill
+                    label="Completed"
+                    active={statusFilter === "Completed"}
+                    onClick={() => setStatusFilter("Completed")}
+                  />
+                  <TogglePill
+                    label="Featured Demo"
+                    active={statusFilter === "Featured Demo"}
+                    onClick={() => setStatusFilter("Featured Demo")}
+                  />
+                </div>
 
-              <div className="mx-6 shrink-0 self-stretch w-px bg-[#e5e5e5]" />
+                <div
+                  className="mx-2 w-px shrink-0 self-stretch bg-[#e5e5e5]"
+                  aria-hidden
+                />
 
-              <div className="flex items-center gap-2">
-                <FilterPill label="Floor Plans" />
-                <FilterPill label="As-Built" />
-                <FilterPill label="Design Sets" />
-                <FilterPill label="3D Scans" />
+                <div className="flex shrink-0 items-center gap-2">
+                  <FilterPill label="Floor Plans" />
+                  <FilterPill label="As-Built" />
+                  <FilterPill label="Design Sets" />
+                  <FilterPill label="3D Scans" />
+                </div>
               </div>
             </div>
 
-            <div className="inline-grid grid-cols-4 gap-4">
-            <ProjectCard
-              title="Williams Avenue Residence"
-              location="Larkspur, CA"
-              deliverable="Real Estate Floor Plans"
-              statusLabel="Active"
-              statusTone="info"
-              fileCountLabel="1 File"
-              href="#"
-              imageSrc="/projects/project-williams.jpg"
-            />
-            <ProjectCard
-              title="Pico Avenue Residence"
-              location="San Francisco, CA"
-              deliverable="Real Estate Floor Plans"
-              statusLabel="Completed"
-              statusTone="success"
-              fileCountLabel="1 File"
-              href="#"
-              imageSrc="/projects/project-pico.jpg"
-            />
-            <ProjectCard
-              title="Estrella Avenue Residence"
-              location="Piedmont, CA"
-              deliverable="As-Built Documentation"
-              statusLabel="In-Progress"
-              statusTone="inProgress"
-              fileCountLabel="10 Files"
-              href="#"
-              imageSrc="/projects/project-estrella.jpg"
-            />
-            <ProjectCard
-              title="Casa Mirador"
-              location="Merida, Mexico"
-              deliverable="Drafting & Design"
-              statusLabel="Featured Demo"
-              statusTone="info"
-              fileCountLabel="10 Files"
-              href="/projects/casa-mirador"
-              imageSrc="/projects/project-casa-mirador.jpg"
-              highlighted
-            />
-            <ProjectCard
-              title="Harbor Point Office Suite"
-              location="Oakland, CA"
-              deliverable="3D Reality Capture"
-              statusLabel="Scans Ready"
-              statusTone="success"
-              fileCountLabel="2 Files"
-              href="#"
-              imageSrc="/projects/project-harbor-point.jpg"
-            />
-            <ProjectCard
-              title="Redwood Commons Retail"
-              location="San Jose, CA"
-              deliverable="3D Reality Capture"
-              statusLabel="Processing"
-              statusTone="inProgress"
-              fileCountLabel="3 Files"
-              href="#"
-              imageSrc="/projects/project-redwood-commons.jpg"
-            />
-          </div>
+            <div className="grid w-full max-w-[1088px] grid-cols-[repeat(auto-fit,260px)] justify-center gap-4">
+              {visibleProjects.map((p) => (
+                <ProjectCard
+                  key={p.title}
+                  title={p.title}
+                  location={p.location}
+                  deliverable={p.deliverable}
+                  statusLabel={p.statusLabel}
+                  statusTone={p.statusTone}
+                  fileCountLabel={p.fileCountLabel}
+                  href={p.href}
+                  imageSrc={p.imageSrc}
+                  highlighted={p.highlighted}
+                />
+              ))}
+            </div>
         </div>
         </div>
       </section>

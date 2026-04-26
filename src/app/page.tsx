@@ -149,7 +149,13 @@ export default function LoginPage() {
       >
         <div className="flex w-full max-w-[540px] flex-col gap-4">
           <div className="flex w-full justify-start">
-            <div className="flex items-center gap-2">
+            <a
+              href="https://www.archreconstudio.com/"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="flex items-center gap-2"
+              aria-label="ArchRecon — open marketing website"
+            >
               <div className="relative size-12 shrink-0 overflow-hidden rounded-full bg-[var(--ar-secondary)]">
                 <Image
                   src="/brand/archreconlogo2d.png"
@@ -163,7 +169,7 @@ export default function LoginPage() {
               <span className="font-[family-name:var(--ar-font-family-heading)] text-2xl font-medium leading-8 text-[#00162d]">
                 ArchRecon
               </span>
-            </div>
+            </a>
           </div>
 
           <div
