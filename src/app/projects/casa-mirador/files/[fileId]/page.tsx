@@ -10,8 +10,33 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { CasaMiradorFileViewerHeaderCtas } from "./file-viewer-header-ctas";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ fileId: string }>;
+}): Promise<Metadata> {
+  const { fileId } = await params;
+  const asset = getCasaMiradorAsset(fileId);
+
+  if (!asset) {
+    return {
+      title: "File Viewer",
+      description:
+        "Preview project files, drawings, and deliverables in the ArchRecon portal.",
+    };
+  }
+
+  return {
+    title: asset.title,
+    description:
+      asset.viewer?.description ??
+      `Preview ${asset.title} in the Casa Mirador project workspace.`,
+  };
+}
 
 function IconBreadcrumbChevron({ className }: { className?: string }) {
   return (

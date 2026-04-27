@@ -1,4 +1,11 @@
 import AppShell from "@/components/layout/app-shell";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Documents",
+  description:
+    "View shared documents, reports, and reference materials across your ArchRecon projects.",
+};
 
 export default function DocumentsPage() {
   return (
