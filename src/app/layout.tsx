@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import localFont from "next/font/local";
 import { Catamaran, Geist_Mono, Inter } from "next/font/google";
 import DemoBannerHost from "@/components/layout/demo-banner-host";
@@ -38,6 +39,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const gaId = process.env.NEXT_PUBLIC_GA_ID;
+
   return (
     <html
       lang="en"
@@ -45,6 +48,7 @@ export default function RootLayout({
     >
       <body className="min-h-full">
         <DemoBannerHost>{children}</DemoBannerHost>
+        {gaId ? <GoogleAnalytics gaId={gaId} /> : null}
       </body>
     </html>
   );
