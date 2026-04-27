@@ -563,7 +563,7 @@ export function DashboardHomeContent() {
               title="Drafting & Design"
               description="Complete architectural drafting and design sets"
               status="Ready for Download: 1"
-              action="Download"
+              action="View Drawings"
               statusTone="success"
               icon={<IconDrafting />}
               actionHref="/projects/casa-mirador"

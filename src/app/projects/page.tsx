@@ -280,7 +280,7 @@ export default function ProjectsPage() {
 
       <div className="hidden lg:block">
         <AppShell activeItem="projects">
-      <section className="w-full">
+      <section className="flex min-h-screen w-full flex-col">
         <div className="-mx-8 -mt-8 border-b border-[#e5e5e5] bg-white">
           <div className="p-8">
             <div className="flex flex-col items-center gap-2">
@@ -301,7 +301,7 @@ export default function ProjectsPage() {
           </div>
         </div>
 
-        <div className="-mx-8 bg-[#fafafa] p-8">
+        <div className="-mx-8 flex-1 bg-[var(--ar-bg)] p-8">
           <div className="flex flex-col items-center gap-6">
             <div className="-mx-8 w-[calc(100%+64px)] overflow-x-auto px-8 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <div className="mx-auto flex w-max items-center gap-6">

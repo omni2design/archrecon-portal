@@ -876,7 +876,7 @@ function MobileDashboardContent() {
               description="Complete architectural drafting and design sets"
               status="Ready for Download: 1"
               statusTone="success"
-              action="Download"
+              action="View Drawings"
               icon={<IconDrafting />}
               actionHref="/projects/casa-mirador"
               demoHighlight
