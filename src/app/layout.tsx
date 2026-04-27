@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { GoogleAnalytics } from "@next/third-parties/google";
+import Script from "next/script";
 import localFont from "next/font/local";
 import { Catamaran, Geist_Mono, Inter } from "next/font/google";
 import DemoBannerHost from "@/components/layout/demo-banner-host";
@@ -41,14 +41,38 @@ export default function RootLayout({
 }>) {
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
 
+  if (process.env.NODE_ENV === "production" && !gaId) {
+    console.warn(
+      "[GA4] NEXT_PUBLIC_GA_ID is not set; Google Analytics will not load."
+    );
+  }
+
   return (
     <html
       lang="en"
       className={`${inter.variable} ${catamaran.variable} ${geistMono.variable} ${nasalization.variable} min-h-full antialiased`}
     >
+      <head>
+        {gaId ? <meta name="ga4-measurement-id" content={gaId} /> : null}
+      </head>
       <body className="min-h-full">
         <DemoBannerHost>{children}</DemoBannerHost>
-        {gaId ? <GoogleAnalytics gaId={gaId} /> : null}
+        {gaId ? (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+              strategy="afterInteractive"
+            />
+            <Script id="ga4" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){window.dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${gaId}', { anonymize_ip: true });
+              `}
+            </Script>
+          </>
+        ) : null}
       </body>
     </html>
   );
