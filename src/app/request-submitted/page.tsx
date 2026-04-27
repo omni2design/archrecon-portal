@@ -1,12 +1,14 @@
+import { pageMetadataSegment } from "@/lib/social-preview";
 import { Suspense } from "react";
-import type { Metadata } from "next";
 import MobileRequestSubmitted from "./mobile-request-submitted";
 import RequestSubmittedContent from "./request-submitted-content";
 
-export const metadata: Metadata = {
-  title: "Request Submitted",
-  description: "Your request has been submitted successfully in the ArchRecon portal.",
-};
+export const metadata = pageMetadataSegment({
+  titleSegment: "Request Submitted",
+  description:
+    "Your request has been submitted successfully in the ArchRecon portal.",
+  path: "/request-submitted",
+});
 
 export default function Page() {
   return (

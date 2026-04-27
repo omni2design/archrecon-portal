@@ -1,13 +1,13 @@
+import { pageMetadataSegment } from "@/lib/social-preview";
 import Link from "next/link";
 import AppShell from "@/components/layout/app-shell";
 import MobileNotFound from "./not-found/mobile-not-found";
-import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Page Not Found",
+export const metadata = pageMetadataSegment({
+  titleSegment: "Page Not Found",
   description:
     "The page you are looking for may have been moved, removed, or is unavailable in this demo workspace.",
-};
+});
 
 function IconArrowUpRight({ className }: { className?: string }) {
   return (

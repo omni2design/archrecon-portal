@@ -9,6 +9,7 @@ import {
 } from "@/data/projects/casa-mirador-assets";
 import Image from "next/image";
 import Link from "next/link";
+import { fileViewerMetadata } from "@/lib/social-preview";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
@@ -21,21 +22,22 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { fileId } = await params;
   const asset = getCasaMiradorAsset(fileId);
+  const path = `/projects/casa-mirador/files/${fileId}`;
 
   if (!asset) {
-    return {
-      title: "File Viewer",
-      description:
-        "Preview project files, drawings, and deliverables in the ArchRecon portal.",
-    };
+    return fileViewerMetadata(
+      "File Viewer",
+      "Preview project files, drawings, and deliverables in the ArchRecon portal.",
+      path
+    );
   }
 
-  return {
-    title: asset.title,
-    description:
-      asset.viewer?.description ??
+  return fileViewerMetadata(
+    asset.title,
+    asset.viewer?.description ??
       `Preview ${asset.title} in the Casa Mirador project workspace.`,
-  };
+    path
+  );
 }
 
 function IconBreadcrumbChevron({ className }: { className?: string }) {

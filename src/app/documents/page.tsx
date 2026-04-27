@@ -1,11 +1,12 @@
 import AppShell from "@/components/layout/app-shell";
-import type { Metadata } from "next";
+import { pageMetadataSegment } from "@/lib/social-preview";
 
-export const metadata: Metadata = {
-  title: "Documents",
+export const metadata = pageMetadataSegment({
+  titleSegment: "Documents",
   description:
     "View shared documents, reports, and reference materials across your ArchRecon projects.",
-};
+  path: "/documents",
+});
 
 export default function DocumentsPage() {
   return (

@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
+import { pageMetadataSegment } from "@/lib/social-preview";
 
-export const metadata: Metadata = {
-  title: "Casa Mirador",
+export const metadata = pageMetadataSegment({
+  titleSegment: "Casa Mirador",
   description:
     "Review the Casa Mirador project, including drawings, files, progress, and deliverables.",
-};
+  path: "/projects/casa-mirador",
+});
 
 export default function CasaMiradorLayout({
   children,

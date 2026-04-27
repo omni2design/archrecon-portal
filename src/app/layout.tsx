@@ -3,6 +3,11 @@ import Script from "next/script";
 import localFont from "next/font/local";
 import { Catamaran, Geist_Mono, Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import {
+  defaultSocialImageDescriptor,
+  DEFAULT_SOCIAL_IMAGE,
+  SITE_NAME,
+} from "@/lib/social-preview";
 import DemoBannerHost from "@/components/layout/demo-banner-host";
 import "./globals.css";
 
@@ -38,7 +43,12 @@ function getMetadataBase(): URL {
   if (explicit) return new URL(explicit);
 
   const vercelHost = process.env.VERCEL_URL?.trim();
-  if (vercelHost) return new URL(`https://${vercelHost}`);
+  if (vercelHost) {
+    if (vercelHost.startsWith("http://") || vercelHost.startsWith("https://")) {
+      return new URL(vercelHost);
+    }
+    return new URL(`https://${vercelHost}`);
+  }
 
   // Local/dev fallback.
   return new URL("http://localhost:3000");
@@ -47,12 +57,12 @@ function getMetadataBase(): URL {
 export const metadata: Metadata = {
   metadataBase: getMetadataBase(),
   title: {
-    default: "ArchRecon Portal",
-    template: "%s | ArchRecon Portal",
+    default: SITE_NAME,
+    template: `%s | ${SITE_NAME}`,
   },
   description:
     "Access projects, files, deliverables, and requests in the ArchRecon client portal.",
-  applicationName: "ArchRecon Portal",
+  applicationName: SITE_NAME,
   icons: {
     icon: [
       {
@@ -73,25 +83,20 @@ export const metadata: Metadata = {
     follow: false,
   },
   openGraph: {
-    title: "ArchRecon Portal",
+    title: SITE_NAME,
+    siteName: SITE_NAME,
     description:
       "Access projects, files, deliverables, and requests in the ArchRecon client portal.",
     type: "website",
-    images: [
-      {
-        url: "/images/social/AR_SocialPreview_ArchReconWeb_PortalDemo.png",
-        width: 1200,
-        height: 630,
-        alt: "ArchRecon Client Portal — preview",
-      },
-    ],
+    url: "/",
+    images: [defaultSocialImageDescriptor],
   },
   twitter: {
     card: "summary_large_image",
-    title: "ArchRecon Portal",
+    title: SITE_NAME,
     description:
       "Access projects, files, deliverables, and requests in the ArchRecon client portal.",
-    images: ["/images/social/AR_SocialPreview_ArchReconWeb_PortalDemo.png"],
+    images: [DEFAULT_SOCIAL_IMAGE],
   },
 };
 

@@ -1,14 +1,15 @@
 import AppShell from "@/components/layout/app-shell";
-import type { Metadata } from "next";
+import { pageMetadataSegment } from "@/lib/social-preview";
 import { DashboardHomeContent } from "./dashboard-home-content";
 import DashboardEnterTransition from "./dashboard-enter-transition";
 import MobileDashboard from "./mobile-dashboard";
 
-export const metadata: Metadata = {
-  title: "Dashboard",
+export const metadata = pageMetadataSegment({
+  titleSegment: "Dashboard",
   description:
     "View active projects, recent activity, deliverables, and quick access to ArchRecon services.",
-};
+  path: "/dashboard",
+});
 
 export default function DashboardPage() {
   return (

@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
+import { pageMetadataSegment } from "@/lib/social-preview";
 
-export const metadata: Metadata = {
-  title: "New Request",
+export const metadata = pageMetadataSegment({
+  titleSegment: "New Request",
   description:
     "Submit a new project request and upload files through the ArchRecon portal.",
-};
+  path: "/request-service",
+});
 
 export default function RequestServiceLayout({
   children,
