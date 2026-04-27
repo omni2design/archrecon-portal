@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import localFont from "next/font/local";
 import { Catamaran, Geist_Mono, Inter } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import DemoBannerHost from "@/components/layout/demo-banner-host";
 import "./globals.css";
 
@@ -51,6 +52,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${inter.variable} ${catamaran.variable} ${geistMono.variable} ${nasalization.variable} min-h-full antialiased`}
+      suppressHydrationWarning
     >
       <head>
         {gaId ? <meta name="ga4-measurement-id" content={gaId} /> : null}
@@ -73,6 +75,7 @@ export default function RootLayout({
             </Script>
           </>
         ) : null}
+        <Analytics />
       </body>
     </html>
   );
