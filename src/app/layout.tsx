@@ -63,6 +63,8 @@ export const metadata: Metadata = {
   description:
     "Access projects, files, deliverables, and requests in the ArchRecon client portal.",
   applicationName: SITE_NAME,
+  // Themed SVGs first; public/favicon.ico is fallback for clients without SVG or prefers-color-scheme on icons.
+  // Do not add favicon.ico under src/app: Next injects an extra icon link that conflicts with these entries.
   icons: {
     icon: [
       {
@@ -75,8 +77,13 @@ export const metadata: Metadata = {
         type: "image/svg+xml",
         media: "(prefers-color-scheme: dark)",
       },
-      { url: "/favicon.ico", sizes: "any" },
+      {
+        url: "/favicon.ico",
+        sizes: "any",
+        type: "image/x-icon",
+      },
     ],
+    shortcut: "/favicon.ico",
   },
   robots: {
     index: false,
