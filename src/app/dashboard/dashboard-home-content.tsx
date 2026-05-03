@@ -119,13 +119,18 @@ function StatCard({
   label,
   value,
   change,
+  href,
 }: {
   label: string;
   value: string;
   change: string;
+  href?: string;
 }) {
-  return (
-    <div className="flex min-w-0 flex-1 flex-col gap-2 rounded-2xl border border-[#e5e5e5] bg-white p-6 shadow-sm">
+  const className =
+    "flex min-w-0 flex-1 flex-col gap-2 rounded-2xl border border-[#e5e5e5] bg-white p-6 shadow-sm transition hover:bg-[#f8fafc]";
+
+  const content = (
+    <>
       <p className="text-xs font-normal leading-4 text-[var(--ar-text-muted)]">
         {label}
       </p>
@@ -139,8 +144,18 @@ function StatCard({
         <IconTrendingUp className="shrink-0" aria-hidden />
         <span>{change}</span>
       </div>
-    </div>
+    </>
   );
+
+  if (href) {
+    return (
+      <Link href={href} className={className} aria-label={`${label}: ${value}`}>
+        {content}
+      </Link>
+    );
+  }
+
+  return <div className={className}>{content}</div>;
 }
 
 type ServiceStatusTone = "info" | "inProgress" | "success";
@@ -517,24 +532,40 @@ export function DashboardHomeContent() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 lg:flex-row">
-          <StatCard label="Active Projects" value="3" change="+2 this week" />
-          <StatCard
-            label="Floor Plans Delivered"
-            value="24"
-            change="+5 this month"
-          />
-          <StatCard
-            label="As-Built Packages"
-            value="12"
-            change="+3 this month"
-          />
-          <StatCard label="Drafting Sets" value="8" change="+1 this week" />
-          <StatCard
-            label="3D Scans Available"
-            value="12"
-            change="+2 recently processed"
-          />
+        <div className="flex flex-col gap-4">
+          <SectionHeading>Overview</SectionHeading>
+          <div className="flex flex-col gap-4 lg:flex-row">
+            <StatCard
+              label="Active Projects"
+              value="3"
+              change="+2 this week"
+              href="/projects"
+            />
+            <StatCard
+              label="Floor Plans Delivered"
+              value="2"
+              change="+5 this month"
+              href="/projects?deliverable=Floor%20Plans"
+            />
+            <StatCard
+              label="As-Built Packages"
+              value="1"
+              change="+3 this month"
+              href="/projects?deliverable=As-Built"
+            />
+            <StatCard
+              label="Design Sets"
+              value="1"
+              change="+1 this week"
+              href="/projects?deliverable=Design%20Sets"
+            />
+            <StatCard
+              label="3D Scans Available"
+              value="2"
+              change="+2 recently processed"
+              href="/projects?deliverable=3D%20Scans"
+            />
+          </div>
         </div>
 
         <div className="flex flex-col gap-4">
@@ -597,15 +628,15 @@ export function DashboardHomeContent() {
             <div className="flex flex-col gap-4">
               <RecentProjectCard
                 name="Williams Avenue Residence"
-                location="Los Angeles, CA"
+                location="Larkspur, CA"
                 tags={["Floor Plans", "As-Built"]}
                 status="Active"
                 progress={65}
                 variant="active"
               />
               <RecentProjectCard
-                name="Estrella Avenue House"
-                location="San Diego, CA"
+                name="Estrella Avenue Residence"
+                location="Piedmont, CA"
                 tags={["3D Scan", "Drafting"]}
                 status="Active"
                 progress={40}

@@ -9,7 +9,8 @@ import {
 } from "@/components/layout/mobile-portal-chrome";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 type ProjectStatusTone = "info" | "success" | "inProgress";
 
@@ -48,7 +49,6 @@ const statusStyles: Record<
 
 const ICON_LOCATION = "/icons/icon-location.svg";
 const ICON_DELIVERABLE = "/icons/icon-deliverable.svg";
-const ICON_FILTER = "/icons/icon-filter.svg";
 const ICON_ARROW = "/icons/icon-arrow.svg";
 
 function TogglePill({
@@ -75,24 +75,6 @@ function TogglePill({
         className ?? "",
       ].join(" ")}
     >
-      {label}
-    </button>
-  );
-}
-
-function FilterPill({ label }: { label: string }) {
-  return (
-    <button
-      type="button"
-      className="inline-flex h-[38px] shrink-0 items-center justify-center gap-2 rounded-[48px] border border-[#d6d6d6] bg-white px-[16px] py-[8px] font-[family-name:var(--ar-font-family-body)] text-sm font-medium leading-[20px] text-[#6f6f6f] transition hover:bg-[#f8fafc]"
-    >
-      <Image
-        src={ICON_FILTER}
-        alt=""
-        width={14}
-        height={14}
-        className="shrink-0"
-      />
       {label}
     </button>
   );
@@ -268,14 +250,70 @@ const MOBILE_PROJECT_ROWS = [
 ];
 
 function MobileProjectsContent() {
+  const searchParams = useSearchParams();
+  const deliverableParam = searchParams.get("deliverable");
+
   const [statusFilter, setStatusFilter] = useState<
     "All" | (typeof MOBILE_PROJECT_ROWS)[number]["statusLabel"]
   >("All");
 
+  const [deliverableFilter, setDeliverableFilter] = useState<
+    "All" | "Floor Plans" | "As-Built" | "Design Sets" | "3D Scans"
+  >("All");
+
+  useEffect(() => {
+    if (!deliverableParam) return;
+
+    const normalized = deliverableParam.trim().toLowerCase();
+    if (!normalized || normalized === "all") {
+      setDeliverableFilter("All");
+      return;
+    }
+
+    if (normalized.includes("floor")) {
+      setDeliverableFilter("Floor Plans");
+      return;
+    }
+    if (normalized.includes("as-built") || normalized.includes("as built")) {
+      setDeliverableFilter("As-Built");
+      return;
+    }
+    if (normalized.includes("design")) {
+      setDeliverableFilter("Design Sets");
+      return;
+    }
+    if (normalized.includes("3d") || normalized.includes("scan")) {
+      setDeliverableFilter("3D Scans");
+      return;
+    }
+  }, [deliverableParam]);
+
   const visibleProjects = useMemo(() => {
-    if (statusFilter === "All") return MOBILE_PROJECT_ROWS;
-    return MOBILE_PROJECT_ROWS.filter((p) => p.statusLabel === statusFilter);
-  }, [statusFilter]);
+    const matchesStatus = (p: (typeof MOBILE_PROJECT_ROWS)[number]) =>
+      statusFilter === "All" ? true : p.statusLabel === statusFilter;
+
+    const matchesDeliverable = (p: (typeof MOBILE_PROJECT_ROWS)[number]) => {
+      if (deliverableFilter === "All") return true;
+
+      const d = p.deliverable.toLowerCase();
+      switch (deliverableFilter) {
+        case "Floor Plans":
+          return d.includes("floor plan");
+        case "As-Built":
+          return d.includes("as-built") || d.includes("as built");
+        case "Design Sets":
+          return d.includes("design");
+        case "3D Scans":
+          return d.includes("3d") || d.includes("reality capture") || d.includes("scan");
+        default:
+          return true;
+      }
+    };
+
+    return MOBILE_PROJECT_ROWS.filter(
+      (p) => matchesStatus(p) && matchesDeliverable(p),
+    );
+  }, [statusFilter, deliverableFilter]);
 
   return (
     <div
@@ -335,10 +373,42 @@ function MobileProjectsContent() {
               aria-hidden
             />
             <div className="flex shrink-0 items-center gap-2">
-              <FilterPill label="Floor Plans" />
-              <FilterPill label="As-Built" />
-              <FilterPill label="Design Sets" />
-              <FilterPill label="3D Scans" />
+              <TogglePill
+                label="Floor Plans"
+                active={deliverableFilter === "Floor Plans"}
+                onClick={() =>
+                  setDeliverableFilter((prev) =>
+                    prev === "Floor Plans" ? "All" : "Floor Plans",
+                  )
+                }
+              />
+              <TogglePill
+                label="As-Built"
+                active={deliverableFilter === "As-Built"}
+                onClick={() =>
+                  setDeliverableFilter((prev) =>
+                    prev === "As-Built" ? "All" : "As-Built",
+                  )
+                }
+              />
+              <TogglePill
+                label="Design Sets"
+                active={deliverableFilter === "Design Sets"}
+                onClick={() =>
+                  setDeliverableFilter((prev) =>
+                    prev === "Design Sets" ? "All" : "Design Sets",
+                  )
+                }
+              />
+              <TogglePill
+                label="3D Scans"
+                active={deliverableFilter === "3D Scans"}
+                onClick={() =>
+                  setDeliverableFilter((prev) =>
+                    prev === "3D Scans" ? "All" : "3D Scans",
+                  )
+                }
+              />
             </div>
           </div>
 

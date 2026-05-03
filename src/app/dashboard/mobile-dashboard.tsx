@@ -435,14 +435,19 @@ function OverviewCard({
   value,
   change,
   icon,
+  href,
 }: {
   label: string;
   value: string;
   change: string;
   icon: React.ReactNode;
+  href?: string;
 }) {
-  return (
-    <div className="flex min-w-0 flex-col gap-4 rounded-[10px] border border-[#e5e5e5] bg-white p-4">
+  const className =
+    "flex min-w-0 flex-col gap-4 rounded-[10px] border border-[#e5e5e5] bg-white p-4 transition hover:bg-[#f8fafc]";
+
+  const content = (
+    <>
       <div
         className="flex size-12 shrink-0 items-center justify-center rounded-[10px] bg-[#f3f3f5] text-[#00162d]"
         aria-hidden
@@ -459,8 +464,18 @@ function OverviewCard({
           <span>{change}</span>
         </div>
       </div>
-    </div>
+    </>
   );
+
+  if (href) {
+    return (
+      <Link href={href} className={className} aria-label={`${label}: ${value}`}>
+        {content}
+      </Link>
+    );
+  }
+
+  return <div className={className}>{content}</div>;
 }
 
 type MobileProjectVariant = "active" | "inProgress" | "completed";
@@ -818,30 +833,35 @@ function MobileDashboardContent() {
               value="3"
               change="+2 this week"
               icon={<IconOverviewFolder />}
+              href="/projects"
             />
             <OverviewCard
               label="Floor Plans Delivered"
-              value="24"
+              value="2"
               change="+5 this month"
               icon={<IconOverviewLayers />}
+              href="/projects?deliverable=Floor%20Plans"
             />
             <OverviewCard
               label="As-Built Packages"
-              value="12"
+              value="1"
               change="+3 this month"
               icon={<IconOverviewWireframeCube />}
+              href="/projects?deliverable=As-Built"
             />
             <OverviewCard
-              label="Drafting Sets"
-              value="8"
+              label="Design Sets"
+              value="1"
               change="+1 this week"
               icon={<IconOverviewDocument />}
+              href="/projects?deliverable=Design%20Sets"
             />
             <OverviewCard
               label="3D Scans Available"
-              value="12"
+              value="2"
               change="+2 recently processed"
               icon={<IconOverviewScanCorners />}
+              href="/projects?deliverable=3D%20Scans"
             />
           </div>
         </section>
@@ -904,15 +924,15 @@ function MobileDashboardContent() {
           <div className="flex flex-col gap-4">
             <MobileRecentProjectCard
               name="Williams Avenue Residence"
-              location="Los Angeles, CA"
+              location="Larkspur, CA"
               tags={["Floor Plans", "As-Built"]}
               status="Active"
               progress={65}
               variant="active"
             />
             <MobileRecentProjectCard
-              name="Estrella Avenue House"
-              location="San Diego, CA"
+              name="Estrella Avenue Residence"
+              location="Piedmont, CA"
               tags={["3D Scan", "Drafting"]}
               status="Active"
               progress={40}

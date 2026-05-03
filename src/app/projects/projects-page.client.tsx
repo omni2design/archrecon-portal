@@ -3,7 +3,8 @@
 import AppShell from "@/components/layout/app-shell";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import MobileProjects from "./mobile-projects";
 
 type ProjectStatusTone = "info" | "success" | "inProgress";
@@ -263,14 +264,68 @@ function FilterPill({ label }: { label: string }) {
 }
 
 export default function ProjectsPageClient() {
+  const searchParams = useSearchParams();
+  const deliverableParam = searchParams.get("deliverable");
+
   const [statusFilter, setStatusFilter] = useState<
     "All" | ProjectRow["statusLabel"]
   >("All");
 
+  const [deliverableFilter, setDeliverableFilter] = useState<
+    "All" | "Floor Plans" | "As-Built" | "Design Sets" | "3D Scans"
+  >("All");
+
+  useEffect(() => {
+    if (!deliverableParam) return;
+
+    const normalized = deliverableParam.trim().toLowerCase();
+    if (!normalized || normalized === "all") {
+      setDeliverableFilter("All");
+      return;
+    }
+
+    if (normalized.includes("floor")) {
+      setDeliverableFilter("Floor Plans");
+      return;
+    }
+    if (normalized.includes("as-built") || normalized.includes("as built")) {
+      setDeliverableFilter("As-Built");
+      return;
+    }
+    if (normalized.includes("design")) {
+      setDeliverableFilter("Design Sets");
+      return;
+    }
+    if (normalized.includes("3d") || normalized.includes("scan")) {
+      setDeliverableFilter("3D Scans");
+      return;
+    }
+  }, [deliverableParam]);
+
   const visibleProjects = useMemo(() => {
-    if (statusFilter === "All") return PROJECT_ROWS;
-    return PROJECT_ROWS.filter((p) => p.statusLabel === statusFilter);
-  }, [statusFilter]);
+    const matchesStatus = (p: ProjectRow) =>
+      statusFilter === "All" ? true : p.statusLabel === statusFilter;
+
+    const matchesDeliverable = (p: ProjectRow) => {
+      if (deliverableFilter === "All") return true;
+
+      const d = p.deliverable.toLowerCase();
+      switch (deliverableFilter) {
+        case "Floor Plans":
+          return d.includes("floor plan");
+        case "As-Built":
+          return d.includes("as-built") || d.includes("as built");
+        case "Design Sets":
+          return d.includes("design");
+        case "3D Scans":
+          return d.includes("3d") || d.includes("reality capture") || d.includes("scan");
+        default:
+          return true;
+      }
+    };
+
+    return PROJECT_ROWS.filter((p) => matchesStatus(p) && matchesDeliverable(p));
+  }, [statusFilter, deliverableFilter]);
 
   return (
     <>
@@ -334,10 +389,42 @@ export default function ProjectsPageClient() {
                     />
 
                     <div className="flex shrink-0 items-center gap-2">
-                      <FilterPill label="Floor Plans" />
-                      <FilterPill label="As-Built" />
-                      <FilterPill label="Design Sets" />
-                      <FilterPill label="3D Scans" />
+                      <TogglePill
+                        label="Floor Plans"
+                        active={deliverableFilter === "Floor Plans"}
+                        onClick={() =>
+                          setDeliverableFilter((prev) =>
+                            prev === "Floor Plans" ? "All" : "Floor Plans",
+                          )
+                        }
+                      />
+                      <TogglePill
+                        label="As-Built"
+                        active={deliverableFilter === "As-Built"}
+                        onClick={() =>
+                          setDeliverableFilter((prev) =>
+                            prev === "As-Built" ? "All" : "As-Built",
+                          )
+                        }
+                      />
+                      <TogglePill
+                        label="Design Sets"
+                        active={deliverableFilter === "Design Sets"}
+                        onClick={() =>
+                          setDeliverableFilter((prev) =>
+                            prev === "Design Sets" ? "All" : "Design Sets",
+                          )
+                        }
+                      />
+                      <TogglePill
+                        label="3D Scans"
+                        active={deliverableFilter === "3D Scans"}
+                        onClick={() =>
+                          setDeliverableFilter((prev) =>
+                            prev === "3D Scans" ? "All" : "3D Scans",
+                          )
+                        }
+                      />
                     </div>
                   </div>
                 </div>
