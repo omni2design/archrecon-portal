@@ -862,7 +862,7 @@ function MobileDashboardContent() {
               value="3"
               change="+2 this week"
               icon={<IconOverviewFolder />}
-              href="/projects"
+              href="/projects?status=Active"
             />
             <OverviewCard
               label="Floor Plans Delivered"
@@ -954,7 +954,7 @@ function MobileDashboardContent() {
             <MobileRecentProjectCard
               name="Williams Avenue Residence"
               location="Larkspur, CA"
-              tags={["Floor Plans", "As-Built"]}
+              tags={["Floor Plans", "Real Estate"]}
               status="Active"
               progress={65}
               variant="active"
@@ -963,7 +963,7 @@ function MobileDashboardContent() {
             <MobileRecentProjectCard
               name="Estrella Avenue Residence"
               location="Piedmont, CA"
-              tags={["3D Scan", "Drafting"]}
+              tags={["As-Built", "Documentation"]}
               status="Active"
               progress={40}
               variant="active"
@@ -972,7 +972,7 @@ function MobileDashboardContent() {
             <MobileRecentProjectCard
               name="Casa Mirador"
               location="Chakabamba, Peru"
-              tags={["Floor Plans", "Design"]}
+              tags={["Drafting", "Design"]}
               status="Completed"
               progress={100}
               variant="completed"

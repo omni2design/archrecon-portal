@@ -569,7 +569,7 @@ export function DashboardHomeContent() {
               label="Active Projects"
               value="3"
               change="+2 this week"
-              href="/projects"
+              href="/projects?status=Active"
             />
             <StatCard
               label="Floor Plans Delivered"
@@ -659,7 +659,7 @@ export function DashboardHomeContent() {
               <RecentProjectCard
                 name="Williams Avenue Residence"
                 location="Larkspur, CA"
-                tags={["Floor Plans", "As-Built"]}
+                tags={["Floor Plans", "Real Estate"]}
                 status="Active"
                 progress={65}
                 variant="active"
@@ -668,7 +668,7 @@ export function DashboardHomeContent() {
               <RecentProjectCard
                 name="Estrella Avenue Residence"
                 location="Piedmont, CA"
-                tags={["3D Scan", "Drafting"]}
+                tags={["As-Built", "Documentation"]}
                 status="Active"
                 progress={40}
                 variant="active"
@@ -677,7 +677,7 @@ export function DashboardHomeContent() {
               <RecentProjectCard
                 name="Casa Mirador"
                 location="Chakabamba, Peru"
-                tags={["Floor Plans", "Design"]}
+                tags={["Drafting", "Design"]}
                 status="Completed"
                 progress={100}
                 variant="completed"
