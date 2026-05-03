@@ -266,6 +266,7 @@ function FilterPill({ label }: { label: string }) {
 export default function ProjectsPageClient() {
   const searchParams = useSearchParams();
   const deliverableParam = searchParams.get("deliverable");
+  const statusParam = searchParams.get("status");
 
   const [statusFilter, setStatusFilter] = useState<
     "All" | ProjectRow["statusLabel"]
@@ -301,6 +302,27 @@ export default function ProjectsPageClient() {
       return;
     }
   }, [deliverableParam]);
+
+  useEffect(() => {
+    if (!statusParam) return;
+
+    const normalized = statusParam.trim().toLowerCase();
+    if (!normalized || normalized === "all") {
+      setStatusFilter("All");
+      return;
+    }
+    if (normalized === "active") {
+      setStatusFilter("Active");
+      return;
+    }
+    if (normalized === "completed") {
+      setStatusFilter("Completed");
+      return;
+    }
+    if (normalized.includes("featured")) {
+      setStatusFilter("Featured Demo");
+    }
+  }, [statusParam]);
 
   const visibleProjects = useMemo(() => {
     const matchesStatus = (p: ProjectRow) =>

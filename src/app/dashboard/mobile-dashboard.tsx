@@ -188,58 +188,67 @@ function MobileServiceCard({
     </>
   );
 
-  return (
-    <div
-      className={[
-        "rounded-[10px] border bg-white p-6 shadow-sm",
-        demoHighlight ? "border-[#f4038b]" : "border-[#e5e5e5]",
-      ].join(" ")}
-    >
-      <div className="flex flex-col gap-4">
-        <div
-          className="flex size-12 shrink-0 items-center justify-center rounded-[10px] px-3"
-          style={{ backgroundImage: AR_BRAND_GRADIENT }}
+  const cardClassName = [
+    "rounded-[10px] border bg-white p-6 shadow-sm",
+    demoHighlight ? "border-[#f4038b]" : "border-[#e5e5e5]",
+    actionHref ? "block cursor-pointer transition hover:bg-[#f8fafc]" : "",
+  ].join(" ");
+
+  const body = (
+    <div className="flex flex-col gap-4">
+      <div
+        className="flex size-12 shrink-0 items-center justify-center rounded-[10px] px-3"
+        style={{ backgroundImage: AR_BRAND_GRADIENT }}
+        aria-hidden
+      >
+        {icon}
+      </div>
+
+      <div className="space-y-1">
+        <h3 className="text-[18px] font-semibold leading-[22px] text-[#00162d]">{title}</h3>
+        <p className="text-[12px] font-normal leading-4 text-[#6f6f6f]">{description}</p>
+      </div>
+
+      <div
+        className={
+          demoHighlight
+            ? "flex flex-col gap-3 border-t border-[#e5e5e5] pt-4"
+            : "border-t border-[#e5e5e5] pt-4"
+        }
+      >
+        {demoHighlight ? (
+          <span className="w-fit rounded-full border border-[#cd0074] bg-[#ffebf6] px-3 py-1 text-xs font-medium leading-4 text-[#2f001a]">
+            Featured Demo
+          </span>
+        ) : null}
+        <p className={`text-xs font-medium leading-4 ${statusClass}`}>{status}</p>
+      </div>
+
+      {actionHref ? (
+        <span
+          className={`${ctaClassName} !text-[#fafdff] [&_svg]:!text-[#fafdff]`}
+          style={{ backgroundColor: MOBILE_SECONDARY_BLUE }}
           aria-hidden
         >
-          {icon}
-        </div>
-
-        <div className="space-y-1">
-          <h3 className="text-[18px] font-semibold leading-[22px] text-[#00162d]">{title}</h3>
-          <p className="text-[12px] font-normal leading-4 text-[#6f6f6f]">{description}</p>
-        </div>
-
-        <div
-          className={
-            demoHighlight
-              ? "flex flex-col gap-3 border-t border-[#e5e5e5] pt-4"
-              : "border-t border-[#e5e5e5] pt-4"
-          }
-        >
-          {demoHighlight ? (
-            <span className="w-fit rounded-full border border-[#cd0074] bg-[#ffebf6] px-3 py-1 text-xs font-medium leading-4 text-[#2f001a]">
-              Featured Demo
-            </span>
-          ) : null}
-          <p className={`text-xs font-medium leading-4 ${statusClass}`}>{status}</p>
-        </div>
-
-        {actionHref ? (
-          <Link
-            href={actionHref}
-            className={`${ctaClassName} !text-[#fafdff] hover:!text-[#fafdff] [&_svg]:!text-[#fafdff]`}
-            style={{ backgroundColor: MOBILE_SECONDARY_BLUE }}
-          >
-            {ctaInner}
-          </Link>
-        ) : (
-          <button type="button" className={ctaClassName} style={{ backgroundColor: MOBILE_SECONDARY_BLUE }}>
-            {ctaInner}
-          </button>
-        )}
-      </div>
+          {ctaInner}
+        </span>
+      ) : (
+        <button type="button" className={ctaClassName} style={{ backgroundColor: MOBILE_SECONDARY_BLUE }}>
+          {ctaInner}
+        </button>
+      )}
     </div>
   );
+
+  if (actionHref) {
+    return (
+      <Link href={actionHref} className={cardClassName} aria-label={`${title}: ${action}`}>
+        {body}
+      </Link>
+    );
+  }
+
+  return <div className={cardClassName}>{body}</div>;
 }
 
 function FeaturedDemoCard() {
@@ -488,6 +497,7 @@ function MobileRecentProjectCard({
   progress,
   variant,
   href,
+  demoHighlight = false,
 }: {
   name: string;
   location: string;
@@ -496,6 +506,8 @@ function MobileRecentProjectCard({
   progress: number;
   variant: MobileProjectVariant;
   href?: string;
+  /** Pink outline + Featured Demo pill (matches desktop `RecentProjectCard` / `MobileServiceCard`). */
+  demoHighlight?: boolean;
 }) {
   const pillClass =
     variant === "active"
@@ -504,18 +516,34 @@ function MobileRecentProjectCard({
         ? "border-[#cd0074] bg-[#ffebf6] text-[#2f001a]"
         : "border-[#1fad75] bg-[#e8f7f1] text-[#13795b]";
 
+  const statusPillClass =
+    "shrink-0 rounded-full border px-3 py-1 text-[12px] font-medium leading-4";
+
+  const featuredDemoPillClass =
+    "shrink-0 rounded-full border border-[#cd0074] bg-[#ffebf6] px-3 py-1 text-[12px] font-medium leading-4 text-[#2f001a]";
+
+  const innerCardClass = [
+    "flex w-full flex-col gap-3 rounded-[10px] border bg-white p-6",
+    demoHighlight ? "border-[#f4038b]" : "border-[#e5e5e5]",
+  ].join(" ");
+
+  const linkAriaLabel = demoHighlight
+    ? `${name}: Featured Demo, ${status}`
+    : `${name}: ${status}`;
+
   const content = (
-    <div className="flex w-full flex-col gap-3 rounded-[10px] border border-[#e5e5e5] bg-white p-6">
+    <div className={innerCardClass}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <p className="text-[14px] font-medium leading-5 text-[#00162d]">{name}</p>
           <p className="text-[12px] font-normal leading-4 text-[#6f6f6f]">{location}</p>
         </div>
-        <span
-          className={`shrink-0 rounded-full border px-3 py-1 text-[12px] font-medium leading-4 ${pillClass}`}
-        >
-          {status}
-        </span>
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+          {demoHighlight ? (
+            <span className={featuredDemoPillClass}>Featured Demo</span>
+          ) : null}
+          <span className={`${statusPillClass} ${pillClass}`}>{status}</span>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -552,6 +580,7 @@ function MobileRecentProjectCard({
       <Link
         href={href}
         className="block transition hover:bg-[#f8fafc]"
+        aria-label={linkAriaLabel}
       >
         {content}
       </Link>
@@ -880,7 +909,7 @@ function MobileDashboardContent() {
               statusTone="info"
               action="View Plans"
               icon={<IconFloorPlan />}
-              actionHref="/projects"
+              actionHref="/projects?deliverable=Floor%20Plans"
             />
             <MobileServiceCard
               title="As-Built Documents"
@@ -889,7 +918,7 @@ function MobileDashboardContent() {
               statusTone="inProgress"
               action="View Documents"
               icon={<IconAsBuiltDocs />}
-              actionHref="/projects"
+              actionHref="/projects?deliverable=As-Built"
             />
             <MobileServiceCard
               title="Drafting & Design"
@@ -898,7 +927,7 @@ function MobileDashboardContent() {
               statusTone="success"
               action="View Drawings"
               icon={<IconDrafting />}
-              actionHref="/projects/casa-mirador"
+              actionHref="/projects?deliverable=Design%20Sets"
               demoHighlight
             />
             <MobileServiceCard
@@ -908,7 +937,7 @@ function MobileDashboardContent() {
               statusTone="success"
               action="View Scans"
               icon={<IconRealityCapture />}
-              actionHref="/projects"
+              actionHref="/projects?deliverable=3D%20Scans"
             />
           </div>
         </section>
@@ -929,6 +958,7 @@ function MobileDashboardContent() {
               status="Active"
               progress={65}
               variant="active"
+              href="/projects?status=Active"
             />
             <MobileRecentProjectCard
               name="Estrella Avenue Residence"
@@ -937,6 +967,7 @@ function MobileDashboardContent() {
               status="Active"
               progress={40}
               variant="active"
+              href="/projects?status=Active"
             />
             <MobileRecentProjectCard
               name="Casa Mirador"
@@ -946,6 +977,7 @@ function MobileDashboardContent() {
               progress={100}
               variant="completed"
               href="/projects/casa-mirador"
+              demoHighlight
             />
           </div>
         </section>

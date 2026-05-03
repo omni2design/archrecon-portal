@@ -296,7 +296,7 @@ export default function MobileRequestService() {
             {/* Select a Service */}
             <section className="space-y-4">
               <h2 className="font-[family-name:var(--ar-font-family-heading)] text-[20px] font-medium leading-6 text-[#00162d]">
-                Select a Service
+                Select a Service <span className="font-[family-name:var(--ar-font-family-ui)] font-light text-[#dc2828]">*</span>
               </h2>
               <div className="grid grid-cols-2 gap-4">
                 {SERVICES.map((svc) => {

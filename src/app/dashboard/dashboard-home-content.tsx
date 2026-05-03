@@ -298,13 +298,14 @@ function ServiceCard({
     </>
   );
 
-  return (
-    <div
-      className={[
-        "flex min-h-[317px] min-w-0 flex-1 flex-col gap-4 rounded-2xl border bg-white p-6 shadow-sm",
-        demoHighlight ? "border-[#f4038b]" : "border-[#e5e5e5]",
-      ].join(" ")}
-    >
+  const cardClassName = [
+    "flex min-h-[317px] min-w-0 flex-1 flex-col gap-4 rounded-2xl border bg-white p-6 shadow-sm",
+    demoHighlight ? "border-[#f4038b]" : "border-[#e5e5e5]",
+    actionHref ? "cursor-pointer transition hover:bg-[#f8fafc]" : "",
+  ].join(" ");
+
+  const body = (
+    <>
       <div
         className="flex size-12 shrink-0 items-center justify-center rounded-[10px] px-3"
         style={{ backgroundImage: AR_BRAND_GRADIENT }}
@@ -335,20 +336,34 @@ function ServiceCard({
           </p>
         )}
         {actionHref ? (
-          <Link
-            href={actionHref}
-            className={`${ctaClassName} !text-[#fafdff] hover:!text-[#fafdff] [&_svg]:!text-[#fafdff]`}
+          <span
+            className={`${ctaClassName} !text-[#fafdff] [&_svg]:!text-[#fafdff]`}
+            aria-hidden
           >
             {ctaInner}
-          </Link>
+          </span>
         ) : (
           <button type="button" className={ctaClassName}>
             {ctaInner}
           </button>
         )}
       </div>
-    </div>
+    </>
   );
+
+  if (actionHref) {
+    return (
+      <Link
+        href={actionHref}
+        className={cardClassName}
+        aria-label={`${title}: ${action}`}
+      >
+        {body}
+      </Link>
+    );
+  }
+
+  return <div className={cardClassName}>{body}</div>;
 }
 
 function ActivityItem({
@@ -403,6 +418,7 @@ function RecentProjectCard({
   progress,
   variant,
   href,
+  demoHighlight = false,
 }: {
   name: string;
   location: string;
@@ -411,6 +427,8 @@ function RecentProjectCard({
   progress: number;
   variant: ProjectStatusVariant;
   href?: string;
+  /** Pink outline + Featured Demo pill (matches `ServiceCard` demo treatment). */
+  demoHighlight?: boolean;
 }) {
   const pillClass =
     variant === "active"
@@ -419,10 +437,21 @@ function RecentProjectCard({
         ? "border-[#cd0074] bg-[#ffebf6] text-[#2f001a]"
         : "border-[#1fad75] bg-[#e8f7f1] text-[#13795b]";
 
+  const statusPillClass =
+    "shrink-0 rounded-full border px-3 py-1 text-xs font-medium leading-5";
+
+  const featuredDemoPillClass =
+    "shrink-0 rounded-full border border-[#cd0074] bg-[#ffebf6] px-3 py-1 text-xs font-medium leading-5 text-[#2f001a]";
+
   const className = [
-    "flex flex-col gap-4 rounded-2xl border border-[#e5e5e5] bg-white p-6 shadow-sm",
+    "flex flex-col gap-4 rounded-2xl border bg-white p-6 shadow-sm",
+    demoHighlight ? "border-[#f4038b]" : "border-[#e5e5e5]",
     href ? "cursor-pointer transition hover:shadow-md" : "",
   ].join(" ");
+
+  const linkAriaLabel = demoHighlight
+    ? `${name}: Featured Demo, ${status}`
+    : `${name}: ${status}`;
 
   const content = (
     <>
@@ -435,11 +464,12 @@ function RecentProjectCard({
             {location}
           </p>
         </div>
-        <span
-          className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium leading-5 ${pillClass}`}
-        >
-          {status}
-        </span>
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+          {demoHighlight ? (
+            <span className={featuredDemoPillClass}>Featured Demo</span>
+          ) : null}
+          <span className={`${statusPillClass} ${pillClass}`}>{status}</span>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -473,7 +503,7 @@ function RecentProjectCard({
 
   if (href) {
     return (
-      <Link href={href} className={className}>
+      <Link href={href} className={className} aria-label={linkAriaLabel}>
         {content}
       </Link>
     );
@@ -579,7 +609,7 @@ export function DashboardHomeContent() {
               action="View Plans"
               statusTone="info"
               icon={<IconFloorPlan />}
-              actionHref="/projects"
+              actionHref="/projects?deliverable=Floor%20Plans"
             />
             <ServiceCard
               title="As-Built Documents"
@@ -588,7 +618,7 @@ export function DashboardHomeContent() {
               action="View Documents"
               statusTone="inProgress"
               icon={<IconAsBuiltDocs />}
-              actionHref="/projects"
+              actionHref="/projects?deliverable=As-Built"
             />
             <ServiceCard
               title="Drafting & Design"
@@ -597,7 +627,7 @@ export function DashboardHomeContent() {
               action="View Drawings"
               statusTone="success"
               icon={<IconDrafting />}
-              actionHref="/projects/casa-mirador"
+              actionHref="/projects?deliverable=Design%20Sets"
               demoHighlight
             />
             <ServiceCard
@@ -607,7 +637,7 @@ export function DashboardHomeContent() {
               action="View Scans"
               statusTone="success"
               icon={<IconRealityCapture />}
-              actionHref="/projects"
+              actionHref="/projects?deliverable=3D%20Scans"
             />
           </div>
         </div>
@@ -633,6 +663,7 @@ export function DashboardHomeContent() {
                 status="Active"
                 progress={65}
                 variant="active"
+                href="/projects?status=Active"
               />
               <RecentProjectCard
                 name="Estrella Avenue Residence"
@@ -641,6 +672,7 @@ export function DashboardHomeContent() {
                 status="Active"
                 progress={40}
                 variant="active"
+                href="/projects?status=Active"
               />
               <RecentProjectCard
                 name="Casa Mirador"
@@ -650,6 +682,7 @@ export function DashboardHomeContent() {
                 progress={100}
                 variant="completed"
                 href="/projects/casa-mirador"
+                demoHighlight
               />
             </div>
           </div>

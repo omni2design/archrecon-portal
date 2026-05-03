@@ -234,7 +234,7 @@ function RequestServiceDesktop() {
             {/* Select a Service */}
             <section className="flex w-full flex-col gap-4">
               <h2 className="whitespace-nowrap font-[family-name:var(--ar-font-family-heading)] text-2xl font-medium leading-8 tracking-normal text-[#00162d]">
-                Select a Service
+                Select a Service <span className="font-[family-name:var(--ar-font-family-ui)] font-light text-[#dc2828]">*</span>
               </h2>
               <div className="flex flex-wrap items-stretch gap-4">
                 {SERVICES.map((svc) => {
