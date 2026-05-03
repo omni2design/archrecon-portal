@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { pageMetadataSegment } from "@/lib/social-preview";
 import ProjectsPageClient from "./projects-page.client";
 
@@ -9,5 +10,9 @@ export const metadata = pageMetadataSegment({
 });
 
 export default function ProjectsPage() {
-  return <ProjectsPageClient />;
+  return (
+    <Suspense fallback={null}>
+      <ProjectsPageClient />
+    </Suspense>
+  );
 }
