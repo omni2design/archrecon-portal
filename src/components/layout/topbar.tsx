@@ -1,5 +1,6 @@
 "use client";
 
+import { SettingsGearIcon } from "@/components/icons/settings-gear-icon";
 import GlobalSearch from "@/components/search/global-search";
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
@@ -136,20 +137,7 @@ export default function Topbar() {
                 aria-controls={toolsId}
                 onClick={() => setOpenPanel((v) => (v === "tools" ? "none" : "tools"))}
               >
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden
-                >
-                  <circle cx="12" cy="12" r="3" />
-                  <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-                </svg>
+                <SettingsGearIcon className="size-5 shrink-0" />
               </button>
 
               {openPanel === "tools" ? (

@@ -13,6 +13,7 @@ import {
 import { CasaMiradorPackageReadyDialog } from "@/components/projects/casa-mirador/package-ready-dialog";
 import { CasaMiradorShareDialog } from "@/components/projects/casa-mirador/share-dialog";
 import { CASA_MIRADOR_ASSETS } from "@/data/projects/casa-mirador-assets";
+import { SettingsGearIcon } from "@/components/icons/settings-gear-icon";
 import { DEMO_ENTRY_STORAGE_KEY } from "@/lib/demo-entry-storage";
 
 export const MOBILE_TOPNAV_BG = "#101039";
@@ -257,26 +258,6 @@ function IconInvoices({ className }: { className?: string }) {
     >
       <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1Z" />
       <path d="M8 7h8M8 11h8M8 15h5" />
-    </svg>
-  );
-}
-
-function IconSettings({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <circle cx="12" cy="12" r="3" />
-      <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
     </svg>
   );
 }
@@ -597,7 +578,7 @@ export function MobileDashboardTop(
                 className="flex h-11 items-center gap-3 rounded-full px-4 text-left text-[14px] font-medium text-[#949799]"
                 title="Not included in current demo"
               >
-                <IconSettings className="size-5 shrink-0 text-[#949799]" />
+                <SettingsGearIcon className="size-5 shrink-0 text-[#949799]" />
                 Settings
                 <span className="ml-auto rounded-full border border-[#e5e5e5] bg-white px-2 py-0.5 text-[10px] font-medium text-[#949799]">
                   Coming soon

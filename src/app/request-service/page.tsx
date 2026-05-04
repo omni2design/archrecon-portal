@@ -243,16 +243,17 @@ function RequestServiceDesktop() {
                     <button
                       key={svc.id}
                       type="button"
+                      aria-pressed={isSelected}
                       onClick={() => onPickService(svc.id)}
                       className={[
-                        "flex min-h-0 min-w-[200px] flex-1 basis-0 cursor-pointer flex-col items-start gap-4 self-stretch rounded-[14px] border-2 border-solid bg-white p-6 text-left transition",
+                        "flex min-h-0 min-w-[200px] flex-1 basis-0 cursor-pointer flex-col items-stretch gap-4 self-stretch rounded-[14px] border-2 border-solid bg-white p-6 text-left transition",
                         isSelected
                           ? "border-[#003c79] shadow-sm"
                           : "border-[#e5e5e5] hover:border-[#cbd5e1]",
                       ].join(" ")}
                     >
                       <ServiceIconWrap>{svc.icon}</ServiceIconWrap>
-                      <div className="flex w-full flex-1 flex-col gap-2 tracking-normal">
+                      <div className="flex min-h-0 w-full flex-1 flex-col gap-2 tracking-normal">
                         <p className="w-full text-lg font-semibold leading-[22px] text-[#00162d]">
                           {svc.title}
                         </p>
@@ -260,6 +261,16 @@ function RequestServiceDesktop() {
                           {svc.description}
                         </p>
                       </div>
+                      <span
+                        className={[
+                          "mt-auto flex h-12 w-full shrink-0 items-center justify-center rounded-full text-base font-medium leading-[19.2px] transition select-none",
+                          isSelected
+                            ? "border border-white/50 bg-[#003c79] text-[#fafdff]"
+                            : "border border-[#00162d] bg-white text-[#00162d]",
+                        ].join(" ")}
+                      >
+                        {isSelected ? "Selected" : "Select"}
+                      </span>
                     </button>
                   );
                 })}

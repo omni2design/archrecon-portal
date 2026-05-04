@@ -298,24 +298,35 @@ export default function MobileRequestService() {
               <h2 className="font-[family-name:var(--ar-font-family-heading)] text-[20px] font-medium leading-6 text-[#00162d]">
                 Select a Service <span className="font-[family-name:var(--ar-font-family-ui)] font-light text-[#dc2828]">*</span>
               </h2>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 items-stretch">
                 {SERVICES.map((svc) => {
                   const isSelected = selectedService === svc.id;
                   return (
                     <button
                       key={svc.id}
                       type="button"
+                      aria-pressed={isSelected}
                       onClick={() => onPickService(svc.id)}
                       className={[
-                        "flex cursor-pointer flex-col items-start gap-4 rounded-[12px] border-2 bg-white p-4 text-left transition",
+                        "flex h-full min-h-0 cursor-pointer flex-col items-stretch gap-4 rounded-[12px] border-2 bg-white p-4 text-left transition",
                         isSelected ? "border-[#003c79] shadow-sm" : "border-[#e5e5e5]",
                       ].join(" ")}
                     >
                       <ServiceIconWrap>{svc.icon}</ServiceIconWrap>
-                      <div className="flex w-full flex-col gap-2">
+                      <div className="flex min-h-0 w-full flex-1 flex-col gap-2">
                         <p className="text-[14px] font-medium leading-5 text-[#00162d]">{svc.title}</p>
                         <p className="text-[12px] font-normal leading-4 text-[#6f6f6f]">{svc.description}</p>
                       </div>
+                      <span
+                        className={[
+                          "mt-auto flex h-12 w-full shrink-0 items-center justify-center rounded-full text-[14px] font-medium leading-[19.2px] transition select-none",
+                          isSelected
+                            ? "border border-white/50 bg-[#003c79] text-[#fafdff]"
+                            : "border border-[#00162d] bg-white text-[#00162d]",
+                        ].join(" ")}
+                      >
+                        {isSelected ? "Selected" : "Select"}
+                      </span>
                     </button>
                   );
                 })}

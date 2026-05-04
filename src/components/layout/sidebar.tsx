@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
+import { SettingsGearIcon } from "@/components/icons/settings-gear-icon";
 import { DEMO_ENTRY_STORAGE_KEY } from "@/lib/demo-entry-storage";
 
 type SidebarProps = {
@@ -124,24 +125,6 @@ function IconInvoices() {
       <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1Z" />
       <path d="M8 7h8M8 11h8M8 15h5" />
       <path d="M14.5 15.5c.5 1 1.5 1.5 2.5 1 1-.4 1.5-1.5 1-2.5-.4-.8-1.2-1-2-.7-.8-.2-1.6.2-2 1-.3.6-.2 1.3.3 1.8.4.4 1 .6 1.6.5" />
-    </svg>
-  );
-}
-
-function IconSettings() {
-  return (
-    <svg
-      className={navIconClass}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <circle cx="12" cy="12" r="3" />
-      <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
     </svg>
   );
 }
@@ -313,7 +296,7 @@ export default function Sidebar({ activeItem = "dashboard" }: SidebarProps) {
 
             <NavButton
               label="Settings"
-              icon={<IconSettings />}
+              icon={<SettingsGearIcon className={navIconClass} />}
               href=""
               disabled
             />
