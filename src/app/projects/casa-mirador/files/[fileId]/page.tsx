@@ -167,7 +167,7 @@ export default async function CasaMiradorFileViewerPage({
                 </div>
               </div>
 
-              <div className="mt-4 flex flex-wrap items-center justify-center gap-4">
+              <div className="mt-4 w-full min-w-0">
                 <CasaMiradorFileViewerHeaderCtas
                   fileTitle={asset.title}
                   sharePath={`/projects/casa-mirador/files/${asset.id}`}

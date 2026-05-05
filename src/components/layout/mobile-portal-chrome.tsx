@@ -11,6 +11,7 @@ import {
   useMobileReducedMotion,
 } from "@/components/layout/mobile-bottom-cta-behavior";
 import { CasaMiradorPackageReadyDialog } from "@/components/projects/casa-mirador/package-ready-dialog";
+import { CasaMiradorSingleFileReadyDialog } from "@/components/projects/casa-mirador/single-file-ready-dialog";
 import { CasaMiradorShareDialog } from "@/components/projects/casa-mirador/share-dialog";
 import { CASA_MIRADOR_ASSETS } from "@/data/projects/casa-mirador-assets";
 import { SettingsGearIcon } from "@/components/icons/settings-gear-icon";
@@ -41,6 +42,24 @@ function useIsLgUp() {
 /** Bottom nav stack height: pt-16 + row ~56 + pb-16 (+ safe-area on pb). */
 export const MOBILE_BOTTOM_NAV_OFFSET =
   "calc(16px + 56px + 16px + env(safe-area-inset-bottom, 0px))";
+
+/**
+ * Scroll clearance above the bottom fixed UI for Casa Mirador mobile file viewer: pixels from the
+ * **bottom** of the CTA strip (`bottom: MOBILE_BOTTOM_NAV_OFFSET`) up to the **top** of the
+ * “Download Full Package” pill. The DOM stack measures ~144px; **216px** matches the ~320px total
+ * bottom inset we reserve so the last accordion stays clear of the pill with ~16px breathing room
+ * on real devices (safe areas, font scaling).
+ */
+export const MOBILE_CASA_MIRADOR_FILE_VIEWER_PRIMARY_CTA_TOP_FROM_STRIP_BOTTOM_PX = 216;
+
+/**
+ * Bottom pad so the last accordion clears the fixed CTAs + nav when scrolled to the end.
+ * Single flat `calc()` (no nested `calc()` inside `calc()`) so mobile Safari parses reliably.
+ * Fixed value — do not tie this page to `useMobileFileViewerScrollPaddingStyle`: when the CTA
+ * strip auto-hides, that hook collapses padding (~320px → ~96px), shrinking document height and
+ * preventing scrolling to the real bottom.
+ */
+export const MOBILE_CASA_MIRADOR_FILE_VIEWER_BOTTOM_SCROLL_PADDING = `calc(16px + 56px + 16px + env(safe-area-inset-bottom, 0px) + ${MOBILE_CASA_MIRADOR_FILE_VIEWER_PRIMARY_CTA_TOP_FROM_STRIP_BOTTOM_PX}px + 16px)`;
 
 function DownloadFullPackageIcon({ className }: { className?: string }) {
   return (
@@ -621,6 +640,7 @@ export function MobileBottomArea(
   const isCasaMiradorProjectPage = pathname === "/projects/casa-mirador";
   const [mounted, setMounted] = useState(false);
   const [isPackageDialogOpen, setIsPackageDialogOpen] = useState(false);
+  const [isSingleFileDialogOpen, setIsSingleFileDialogOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
   const casaMiradorFileId = useMemo(() => {
@@ -666,13 +686,13 @@ export function MobileBottomArea(
           <div className="flex w-full flex-col gap-4">
             <button
               type="button"
-              className="relative inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--ar-color-semantic-button-primary)] px-8 font-[family-name:var(--ar-font-family-body)] text-base font-medium text-[var(--ar-color-semantic-button-primary-text)]"
+              className="relative inline-flex h-12 w-full min-w-0 items-center justify-center gap-2 overflow-hidden rounded-full bg-[var(--ar-color-semantic-button-primary)] px-4 font-[family-name:var(--ar-font-family-body)] text-base font-medium text-[var(--ar-color-semantic-button-primary-text)] sm:px-6"
               onClick={() => setIsPackageDialogOpen(true)}
             >
-              <span className="relative z-[1] text-[16px] font-medium leading-[19.2px]">
+              <span className="relative z-[1] min-w-0 max-w-[calc(100%-2.75rem)] truncate text-[16px] font-medium leading-[19.2px]">
                 Download Full Package
               </span>
-              <DownloadFullPackageIcon className="relative z-[1] text-[var(--ar-color-semantic-button-primary-text)]" />
+              <DownloadFullPackageIcon className="relative z-[1] shrink-0 text-[var(--ar-color-semantic-button-primary-text)]" />
               <span
                 className="pointer-events-none absolute inset-0 rounded-full border border-[color:var(--ar-color-semantic-button-primary-boarder)]"
                 aria-hidden
@@ -680,11 +700,29 @@ export function MobileBottomArea(
             </button>
             <button
               type="button"
-              className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full border border-[#e5e5e5] bg-white px-8 text-sm font-medium text-[#00162d] font-[family-name:var(--ar-font-family-body)]"
+              className="relative inline-flex h-12 w-full min-w-0 items-center justify-center gap-2 overflow-hidden rounded-full bg-white px-4 text-[#00162d] transition hover:bg-[#fafafa] sm:px-6"
+              onClick={() => setIsSingleFileDialogOpen(true)}
+            >
+              <span className="relative z-[1] min-w-0 max-w-[calc(100%-2.75rem)] truncate text-[16px] font-medium leading-[19.2px]">
+                Download File
+              </span>
+              <DownloadFullPackageIcon className="relative z-[1] shrink-0 text-[#00162d]" />
+              <span
+                className="pointer-events-none absolute inset-0 rounded-full border border-black/50"
+                aria-hidden
+              />
+            </button>
+            <button
+              type="button"
+              className="relative inline-flex h-12 w-full min-w-0 items-center justify-center gap-3 rounded-full bg-white px-4 py-2 text-sm font-medium text-[#00162d] transition hover:bg-[#fafafa] sm:px-6"
               onClick={() => setIsShareDialogOpen(true)}
             >
-              Share
-              <IconShareSmall className="shrink-0 text-[#00162d]" />
+              <span className="relative z-[1]">Share</span>
+              <IconShareSmall className="relative z-[1] shrink-0 text-[#00162d]" />
+              <span
+                className="pointer-events-none absolute inset-0 rounded-full border border-black/50"
+                aria-hidden
+              />
             </button>
           </div>
         ) : isCasaMiradorProjectPage ? (
@@ -728,12 +766,22 @@ export function MobileBottomArea(
       ) : null}
 
       {isCasaMiradorFileViewer && casaMiradorFileId ? (
-        <CasaMiradorShareDialog
-          isOpen={isShareDialogOpen}
-          onClose={() => setIsShareDialogOpen(false)}
-          fileTitle={casaMiradorFileTitle}
-          sharePath={`/projects/casa-mirador/files/${casaMiradorFileId}`}
-        />
+        <>
+          <CasaMiradorSingleFileReadyDialog
+            isOpen={isSingleFileDialogOpen}
+            onClose={() => setIsSingleFileDialogOpen(false)}
+            fileTitle={casaMiradorFileTitle}
+            onViewAllFiles={() => {
+              router.push("/projects/casa-mirador?tab=drafting-design");
+            }}
+          />
+          <CasaMiradorShareDialog
+            isOpen={isShareDialogOpen}
+            onClose={() => setIsShareDialogOpen(false)}
+            fileTitle={casaMiradorFileTitle}
+            sharePath={`/projects/casa-mirador/files/${casaMiradorFileId}`}
+          />
+        </>
       ) : null}
 
       {/*

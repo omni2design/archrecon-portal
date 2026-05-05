@@ -17,8 +17,9 @@ const MOBILE_MAIN_PAD_CTA_VISIBLE = "calc(15rem + 16px)";
 const MOBILE_MAIN_PAD_CTA_HIDDEN =
   "calc(96px + env(safe-area-inset-bottom, 0px))";
 
+/** Mirrors Casa Mirador mobile file viewer fixed bottom reserve when its CTAs are visible. */
 const FILE_VIEWER_PAD_CTA_VISIBLE =
-  "calc(320px + env(safe-area-inset-bottom, 0px))";
+  "calc(16px + 56px + 16px + env(safe-area-inset-bottom, 0px) + 216px + 16px)";
 const FILE_VIEWER_PAD_CTA_HIDDEN = MOBILE_MAIN_PAD_CTA_HIDDEN;
 
 const SCROLL_DIR_THRESHOLD_PX = 10;

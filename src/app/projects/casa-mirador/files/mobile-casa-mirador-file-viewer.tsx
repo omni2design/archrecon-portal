@@ -4,7 +4,7 @@ import GlobalSearch from "@/components/search/global-search";
 import {
   MobileBottomArea,
   MobileDashboardTop,
-  MOBILE_BOTTOM_NAV_OFFSET,
+  MOBILE_CASA_MIRADOR_FILE_VIEWER_BOTTOM_SCROLL_PADDING,
   MOBILE_PAGE_BG,
 } from "@/components/layout/mobile-portal-chrome";
 import {
@@ -16,6 +16,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { createPortal } from "react-dom";
 import {
   useCallback,
   useEffect,
@@ -70,6 +71,20 @@ function IconFullscreen({ className }: { className?: string }) {
   );
 }
 
+function IconCloseFullscreen({ className }: { className?: string }) {
+  return (
+    <svg className={className} width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M18 6L6 18M6 6l12 12"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 function InfoCell({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-1">
@@ -114,18 +129,8 @@ const DEFAULT_ACCORDION: Record<AccordionId, boolean> = {
   relatedFiles: false,
 };
 
-/**
- * Ensure the scrollable content clears the fixed two-button CTA stack on the file viewer
- * by 16px (gap between content bottom and top of "Download Full Package" button).
- *
- * CTA stack in `MobileBottomArea` for file viewer:
- * - Wrapper is positioned above BottomNav via `MOBILE_BOTTOM_NAV_OFFSET`
- * - Wrapper uses `py-4` (16px top + 16px bottom)
- * - Two buttons: `h-12` (48px) + `gap-4` (16px) + `h-12` (48px) = 112px
- * - So: bottom -> top of first button = MOBILE_BOTTOM_NAV_OFFSET + 16 (wrapper bottom pad) + 112 (buttons+gap) + 16 (wrapper top pad)
- * - Add desired 16px gap above button => +16px
- */
-const MOBILE_FILE_VIEWER_BOTTOM_PADDING = `calc(${MOBILE_BOTTOM_NAV_OFFSET} + 160px)`;
+/** Matches desktop `FileViewerCentered` — keeps immersive fullscreen across `router.replace`. */
+const FILE_VIEWER_IMMERSIVE_FS_KEY = "ar-file-viewer-immersive-fs";
 
 export default function MobileCasaMiradorFileViewer() {
   const params = useParams();
@@ -148,7 +153,8 @@ export default function MobileCasaMiradorFileViewer() {
 
   const [zoom, setZoom] = useState(100);
   const [accordionOpen, setAccordionOpen] = useState(DEFAULT_ACCORDION);
-  const stageRef = useRef<HTMLDivElement>(null);
+  const [isImageFullscreen, setIsImageFullscreen] = useState(false);
+  const [fullscreenPortalReady, setFullscreenPortalReady] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const skipScrollSync = useRef(false);
   const scrollDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -157,15 +163,43 @@ export default function MobileCasaMiradorFileViewer() {
   const zoomIn = useCallback(() => setZoom((z) => Math.min(150, z + 25)), []);
   const resetZoom = useCallback(() => setZoom(100), []);
 
-  const fullscreen = useCallback(() => {
-    const el = stageRef.current;
-    if (!el) return;
-    if (document.fullscreenElement) {
-      void document.exitFullscreen();
-      return;
+  const openImageFullscreen = useCallback(() => {
+    try {
+      sessionStorage.setItem(FILE_VIEWER_IMMERSIVE_FS_KEY, "1");
+    } catch {
+      /* storage blocked */
     }
-    void el.requestFullscreen();
+    setIsImageFullscreen(true);
   }, []);
+
+  const closeImageFullscreen = useCallback(() => {
+    try {
+      sessionStorage.removeItem(FILE_VIEWER_IMMERSIVE_FS_KEY);
+    } catch {
+      /* storage blocked */
+    }
+    setIsImageFullscreen(false);
+  }, []);
+
+  const fullscreenSwipeRef = useRef<{ x: number; y: number; pointerId: number } | null>(
+    null,
+  );
+  const navigateFullscreenRef = useRef<(direction: "next" | "prev") => void>(() => {});
+  const closeFullscreenRef = useRef<() => void>(() => {});
+
+  function navigateFullscreenAsset(direction: "next" | "prev") {
+    const idx = CASA_MIRADOR_ASSETS.findIndex((a) => a.id === activeId);
+    if (idx < 0) return;
+    const nextIdx = direction === "next" ? idx + 1 : idx - 1;
+    if (nextIdx < 0 || nextIdx >= CASA_MIRADOR_ASSETS.length) return;
+    const target = CASA_MIRADOR_ASSETS[nextIdx];
+    router.replace(`/projects/casa-mirador/files/${target.id}`, { scroll: false });
+  }
+
+  useLayoutEffect(() => {
+    navigateFullscreenRef.current = navigateFullscreenAsset;
+    closeFullscreenRef.current = closeImageFullscreen;
+  });
 
   const scrollCarouselToFileId = useCallback((id: string) => {
     const container = scrollRef.current;
@@ -237,6 +271,52 @@ export default function MobileCasaMiradorFileViewer() {
     setAccordionOpen(DEFAULT_ACCORDION);
   }, [fileId]);
 
+  useEffect(() => {
+    setFullscreenPortalReady(true);
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!fullscreenPortalReady) return;
+    try {
+      if (sessionStorage.getItem(FILE_VIEWER_IMMERSIVE_FS_KEY) === "1") {
+        setIsImageFullscreen(true);
+      }
+    } catch {
+      /* storage blocked */
+    }
+  }, [fullscreenPortalReady, fileId]);
+
+  useEffect(() => {
+    if (!isImageFullscreen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [isImageFullscreen]);
+
+  useEffect(() => {
+    if (!isImageFullscreen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeFullscreenRef.current();
+        return;
+      }
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        navigateFullscreenRef.current("next");
+        return;
+      }
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        navigateFullscreenRef.current("prev");
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isImageFullscreen]);
+
   const toggleAccordion = (key: AccordionId) => {
     setAccordionOpen((prev) => ({ ...prev, [key]: !prev[key] }));
   };
@@ -249,7 +329,6 @@ export default function MobileCasaMiradorFileViewer() {
         className="font-[family-name:var(--ar-font-family-body)]"
         style={{
           paddingTop: "calc(var(--ar-top-offset, 0px) + 72px)",
-          paddingBottom: MOBILE_FILE_VIEWER_BOTTOM_PADDING,
         }}
       >
         <div className="border-b border-[#e5e5e5] bg-white py-4">
@@ -282,7 +361,10 @@ export default function MobileCasaMiradorFileViewer() {
           </div>
         </div>
 
-        <div className="px-6 pt-6">
+        <div
+          className="px-6 pt-6"
+          style={{ paddingBottom: MOBILE_CASA_MIRADOR_FILE_VIEWER_BOTTOM_SCROLL_PADDING }}
+        >
           <div className="flex flex-col gap-6">
             <div className="flex items-center justify-center gap-[11px]">
               <button
@@ -317,9 +399,9 @@ export default function MobileCasaMiradorFileViewer() {
               </button>
               <button
                 type="button"
-                onClick={fullscreen}
-                className="flex size-10 shrink-0 items-center justify-center rounded-[10px] border border-[#e5e5e5] bg-white text-[#00162d] transition hover:bg-[#fafafa]"
-                aria-label="Enter fullscreen"
+                onClick={openImageFullscreen}
+                className="flex h-11 min-h-[44px] w-11 min-w-[44px] shrink-0 touch-manipulation items-center justify-center rounded-[10px] border border-[#e5e5e5] bg-white text-[#00162d] transition active:bg-[#f0f0f0]"
+                aria-label="View image full screen"
               >
                 <IconFullscreen />
               </button>
@@ -337,10 +419,7 @@ export default function MobileCasaMiradorFileViewer() {
                       key={a.id}
                       className="w-[min(342px,calc(100vw-48px))] shrink-0 snap-center snap-always"
                     >
-                      <div
-                        ref={isActive ? stageRef : undefined}
-                        className="aspect-[342/242] w-full rounded-[10px] border border-[#e5e5e5] bg-white p-[17px] shadow-[0px_1px_3px_0px_rgba(0,0,0,0.1),0px_1px_2px_-1px_rgba(0,0,0,0.1)]"
-                      >
+                      <div className="aspect-[342/242] w-full rounded-[10px] border border-[#e5e5e5] bg-white p-[17px] shadow-[0px_1px_3px_0px_rgba(0,0,0,0.1),0px_1px_2px_-1px_rgba(0,0,0,0.1)]">
                         <div className="relative h-full w-full overflow-hidden rounded-[4px] bg-[#f3f3f5]">
                           <div
                             className="relative h-full w-full"
@@ -543,6 +622,110 @@ export default function MobileCasaMiradorFileViewer() {
       </div>
 
       <MobileBottomArea />
+
+      {fullscreenPortalReady && isImageFullscreen
+        ? createPortal(
+            <div
+              className="fixed inset-0 z-[200] flex flex-col bg-[#0a0a0a]"
+              style={{
+                height: "100dvh",
+                width: "100vw",
+                paddingLeft: "env(safe-area-inset-left, 0px)",
+                paddingRight: "env(safe-area-inset-right, 0px)",
+              }}
+              role="dialog"
+              aria-modal="true"
+              aria-label={`Full screen preview: ${asset.title}`}
+            >
+              <div className="flex shrink-0 items-center gap-3 border-b border-white/10 px-4 pb-3 pt-[max(12px,env(safe-area-inset-top,0px))]">
+                <p
+                  className="min-w-0 flex-1 truncate text-left text-sm font-medium leading-5 text-white/95"
+                  style={{ fontFamily: "var(--ar-font-family-body)" }}
+                >
+                  {asset.title}
+                </p>
+                <button
+                  type="button"
+                  onClick={closeImageFullscreen}
+                  className="flex shrink-0 touch-manipulation items-center gap-2 rounded-full bg-white/15 px-4 py-2.5 text-sm font-semibold leading-none text-white backdrop-blur-md transition active:bg-white/25 min-h-[44px]"
+                  style={{ fontFamily: "var(--ar-font-family-body)" }}
+                  aria-label="Close full screen view"
+                >
+                  <IconCloseFullscreen className="shrink-0 text-white" />
+                  Close
+                </button>
+              </div>
+
+              <div
+                className="relative isolate z-0 min-h-0 w-full flex-1 cursor-grab touch-manipulation select-none active:cursor-grabbing"
+                onPointerDown={(e) => {
+                  if (e.pointerType === "mouse" && e.button !== 0) return;
+                  fullscreenSwipeRef.current = {
+                    x: e.clientX,
+                    y: e.clientY,
+                    pointerId: e.pointerId,
+                  };
+                  (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+                }}
+                onPointerUp={(e) => {
+                  const start = fullscreenSwipeRef.current;
+                  if (!start || e.pointerId !== start.pointerId) return;
+                  fullscreenSwipeRef.current = null;
+                  try {
+                    const el = e.currentTarget as HTMLElement;
+                    if (el.hasPointerCapture?.(e.pointerId)) {
+                      el.releasePointerCapture(e.pointerId);
+                    }
+                  } catch {
+                    /* release failed */
+                  }
+                  const dx = e.clientX - start.x;
+                  const dy = e.clientY - start.y;
+                  const minDx = 56;
+                  if (Math.abs(dx) < minDx) return;
+                  if (Math.abs(dx) < Math.abs(dy) * 1.15) return;
+                  if (dx < 0) {
+                    navigateFullscreenAsset("next");
+                  } else {
+                    navigateFullscreenAsset("prev");
+                  }
+                }}
+                onPointerCancel={(e) => {
+                  const start = fullscreenSwipeRef.current;
+                  if (!start || e.pointerId !== start.pointerId) return;
+                  fullscreenSwipeRef.current = null;
+                  try {
+                    const el = e.currentTarget as HTMLElement;
+                    if (el.hasPointerCapture?.(e.pointerId)) {
+                      el.releasePointerCapture(e.pointerId);
+                    }
+                  } catch {
+                    /* ignore */
+                  }
+                }}
+              >
+                <Image
+                  alt={asset.title}
+                  src={asset.previewImageUrl}
+                  fill
+                  className="pointer-events-none select-none object-contain"
+                  sizes="100vw"
+                  unoptimized
+                  draggable={false}
+                  priority
+                />
+              </div>
+
+              <p
+                className="pointer-events-none shrink-0 px-4 pb-[max(14px,env(safe-area-inset-bottom,0px))] pt-2 text-center text-xs leading-4 text-white/45"
+                style={{ fontFamily: "var(--ar-font-family-body)" }}
+              >
+                Swipe or drag left/right for other files • Rotate your phone as needed
+              </p>
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
 }

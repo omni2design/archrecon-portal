@@ -1,6 +1,7 @@
 "use client";
 
 import { CasaMiradorPackageReadyDialog } from "@/components/projects/casa-mirador/package-ready-dialog";
+import { CasaMiradorSingleFileReadyDialog } from "@/components/projects/casa-mirador/single-file-ready-dialog";
 import { CasaMiradorShareDialog } from "@/components/projects/casa-mirador/share-dialog";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -33,38 +34,62 @@ function ShareIcon({ className }: { className?: string }) {
 export function CasaMiradorFileViewerHeaderCtas(props: { fileTitle: string; sharePath: string }) {
   const { fileTitle, sharePath } = props;
   const [isPackageDialogOpen, setIsPackageDialogOpen] = useState(false);
+  const [isSingleFileDialogOpen, setIsSingleFileDialogOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const router = useRouter();
 
+  const goToProjectFiles = () => {
+    router.push("/projects/casa-mirador?tab=drafting-design");
+  };
+
   return (
     <>
-      <button
-        type="button"
-        className="relative flex h-12 items-center justify-center gap-2 rounded-full bg-[var(--ar-color-semantic-button-primary)] px-8 text-[var(--ar-color-semantic-button-primary-text)] transition hover:bg-[var(--ar-color-semantic-button-primary-hover)]"
-        style={{ fontFamily: "var(--ar-font-family-body)" }}
-        onClick={() => setIsPackageDialogOpen(true)}
-      >
-        <span className="text-base font-medium leading-[19.2px]">Download Full Package</span>
-        <DownloadIcon className="shrink-0 text-[var(--ar-color-semantic-button-primary-text)]" />
-        <span className="pointer-events-none absolute inset-0 rounded-full border border-[color:var(--ar-color-semantic-button-primary-boarder)]" />
-      </button>
+      <div className="flex w-full min-w-0 flex-wrap items-center justify-center gap-4">
+        <button
+          type="button"
+          className="relative inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-[var(--ar-color-semantic-button-primary)] px-8 text-[var(--ar-color-semantic-button-primary-text)] transition hover:bg-[var(--ar-color-semantic-button-primary-hover)]"
+          style={{ fontFamily: "var(--ar-font-family-body)" }}
+          onClick={() => setIsPackageDialogOpen(true)}
+        >
+          <span className="whitespace-nowrap text-base font-medium leading-[19.2px]">Download Full Package</span>
+          <DownloadIcon className="shrink-0 text-[var(--ar-color-semantic-button-primary-text)]" />
+          <span className="pointer-events-none absolute inset-0 rounded-full border border-[color:var(--ar-color-semantic-button-primary-boarder)]" />
+        </button>
 
-      <button
-        type="button"
-        className="flex h-12 items-center justify-center gap-3 rounded-full border border-[var(--ar-color-semantic-border-subtle)] bg-white px-8 py-2 text-sm font-medium text-[#00162d] transition hover:bg-[#fafafa]"
-        style={{ fontFamily: "var(--ar-font-family-body)" }}
-        onClick={() => setIsShareDialogOpen(true)}
-      >
-        Share
-        <ShareIcon className="h-[16.5px] w-[15px] shrink-0 text-[#00162d]" />
-      </button>
+        <button
+          type="button"
+          className="relative inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-white px-8 text-[#00162d] transition hover:bg-[#fafafa]"
+          style={{ fontFamily: "var(--ar-font-family-body)" }}
+          onClick={() => setIsSingleFileDialogOpen(true)}
+        >
+          <span className="whitespace-nowrap text-base font-medium leading-[19.2px]">Download File</span>
+          <DownloadIcon className="relative z-0 shrink-0 text-[#00162d]" />
+          <span className="pointer-events-none absolute inset-0 rounded-full border border-black/50" aria-hidden />
+        </button>
+
+        <button
+          type="button"
+          className="relative inline-flex h-12 shrink-0 items-center justify-center gap-3 rounded-full bg-white px-8 py-2 text-sm font-medium text-[#00162d] transition hover:bg-[#fafafa]"
+          style={{ fontFamily: "var(--ar-font-family-body)" }}
+          onClick={() => setIsShareDialogOpen(true)}
+        >
+          Share
+          <ShareIcon className="h-[16.5px] w-[15px] shrink-0 text-[#00162d]" />
+          <span className="pointer-events-none absolute inset-0 rounded-full border border-black/50" aria-hidden />
+        </button>
+      </div>
 
       <CasaMiradorPackageReadyDialog
         isOpen={isPackageDialogOpen}
         onClose={() => setIsPackageDialogOpen(false)}
-        onViewFiles={() => {
-          router.push("/projects/casa-mirador?tab=drafting-design");
-        }}
+        onViewFiles={goToProjectFiles}
+      />
+
+      <CasaMiradorSingleFileReadyDialog
+        isOpen={isSingleFileDialogOpen}
+        onClose={() => setIsSingleFileDialogOpen(false)}
+        fileTitle={fileTitle}
+        onViewAllFiles={goToProjectFiles}
       />
 
       <CasaMiradorShareDialog
