@@ -18,6 +18,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import {
+  startTransition,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -85,6 +86,22 @@ function IconCloseFullscreen({ className }: { className?: string }) {
   );
 }
 
+function IconChevronLeftLarge({ className }: { className?: string }) {
+  return (
+    <svg className={className} width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function IconChevronRightLarge({ className }: { className?: string }) {
+  return (
+    <svg className={className} width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function InfoCell({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-1">
@@ -132,6 +149,12 @@ const DEFAULT_ACCORDION: Record<AccordionId, boolean> = {
 /** Matches desktop `FileViewerCentered` — keeps immersive fullscreen across `router.replace`. */
 const FILE_VIEWER_IMMERSIVE_FS_KEY = "ar-file-viewer-immersive-fs";
 
+/** Tailwind `lg` — must match desktop shell breakpoint (`hidden lg:block` file viewer). */
+const DESKTOP_LAYOUT_MEDIA = "(min-width: 1024px)";
+
+/** Matches desktop `FileViewerCentered` fullscreen crossfade. */
+const FULLSCREEN_CROSSFADE_MS = 300;
+
 export default function MobileCasaMiradorFileViewer() {
   const params = useParams();
   const router = useRouter();
@@ -154,7 +177,13 @@ export default function MobileCasaMiradorFileViewer() {
   const [zoom, setZoom] = useState(100);
   const [accordionOpen, setAccordionOpen] = useState(DEFAULT_ACCORDION);
   const [isImageFullscreen, setIsImageFullscreen] = useState(false);
+  /** False until layout runs — avoids stacking a second immersive portal behind desktop `FileViewerCentered`. */
+  const [isMobileImmersiveLayout, setIsMobileImmersiveLayout] = useState(false);
   const [fullscreenPortalReady, setFullscreenPortalReady] = useState(false);
+  const [xfIncoming, setXfIncoming] = useState<{ url: string; alt: string } | null>(null);
+  const [xfActive, setXfActive] = useState(false);
+  const [fsNavPending, setFsNavPending] = useState(false);
+  const fullscreenNavTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const skipScrollSync = useRef(false);
   const scrollDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -179,6 +208,13 @@ export default function MobileCasaMiradorFileViewer() {
       /* storage blocked */
     }
     setIsImageFullscreen(false);
+    setXfIncoming(null);
+    setXfActive(false);
+    setFsNavPending(false);
+    if (fullscreenNavTimerRef.current) {
+      clearTimeout(fullscreenNavTimerRef.current);
+      fullscreenNavTimerRef.current = null;
+    }
   }, []);
 
   const fullscreenSwipeRef = useRef<{ x: number; y: number; pointerId: number } | null>(
@@ -187,17 +223,61 @@ export default function MobileCasaMiradorFileViewer() {
   const navigateFullscreenRef = useRef<(direction: "next" | "prev") => void>(() => {});
   const closeFullscreenRef = useRef<() => void>(() => {});
 
-  function navigateFullscreenAsset(direction: "next" | "prev") {
-    const idx = CASA_MIRADOR_ASSETS.findIndex((a) => a.id === activeId);
-    if (idx < 0) return;
-    const nextIdx = direction === "next" ? idx + 1 : idx - 1;
-    if (nextIdx < 0 || nextIdx >= CASA_MIRADOR_ASSETS.length) return;
-    const target = CASA_MIRADOR_ASSETS[nextIdx];
-    router.replace(`/projects/casa-mirador/files/${target.id}`, { scroll: false });
-  }
+  const navigateFullscreen = useCallback(
+    (direction: "next" | "prev") => {
+      const idx = CASA_MIRADOR_ASSETS.findIndex((a) => a.id === activeId);
+      if (idx < 0) return;
+      const targetIdx = direction === "next" ? idx + 1 : idx - 1;
+      if (targetIdx < 0 || targetIdx >= CASA_MIRADOR_ASSETS.length) return;
+      const target = CASA_MIRADOR_ASSETS[targetIdx];
+      const href = `/projects/casa-mirador/files/${target.id}`;
+      if (fsNavPending) return;
+
+      const instantReplace = () => {
+        startTransition(() => {
+          router.replace(href, { scroll: false });
+        });
+      };
+
+      const reducedMotion =
+        typeof window !== "undefined" &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      if (
+        reducedMotion ||
+        !isImageFullscreen ||
+        !isMobileImmersiveLayout ||
+        !target.previewImageUrl
+      ) {
+        instantReplace();
+        return;
+      }
+
+      setFsNavPending(true);
+      setXfIncoming({ url: target.previewImageUrl, alt: target.title });
+      setXfActive(false);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setXfActive(true);
+        });
+      });
+      if (fullscreenNavTimerRef.current) clearTimeout(fullscreenNavTimerRef.current);
+      fullscreenNavTimerRef.current = setTimeout(() => {
+        fullscreenNavTimerRef.current = null;
+        instantReplace();
+      }, FULLSCREEN_CROSSFADE_MS);
+    },
+    [
+      activeId,
+      fsNavPending,
+      isImageFullscreen,
+      isMobileImmersiveLayout,
+      router,
+    ],
+  );
 
   useLayoutEffect(() => {
-    navigateFullscreenRef.current = navigateFullscreenAsset;
+    navigateFullscreenRef.current = navigateFullscreen;
     closeFullscreenRef.current = closeImageFullscreen;
   });
 
@@ -276,7 +356,21 @@ export default function MobileCasaMiradorFileViewer() {
   }, []);
 
   useLayoutEffect(() => {
-    if (!fullscreenPortalReady) return;
+    const mq = window.matchMedia(DESKTOP_LAYOUT_MEDIA);
+    const syncViewport = () => {
+      const desktop = mq.matches;
+      setIsMobileImmersiveLayout(!desktop);
+      if (desktop) {
+        setIsImageFullscreen(false);
+      }
+    };
+    syncViewport();
+    mq.addEventListener("change", syncViewport);
+    return () => mq.removeEventListener("change", syncViewport);
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!fullscreenPortalReady || !isMobileImmersiveLayout) return;
     try {
       if (sessionStorage.getItem(FILE_VIEWER_IMMERSIVE_FS_KEY) === "1") {
         setIsImageFullscreen(true);
@@ -284,19 +378,81 @@ export default function MobileCasaMiradorFileViewer() {
     } catch {
       /* storage blocked */
     }
-  }, [fullscreenPortalReady, fileId]);
+  }, [fullscreenPortalReady, fileId, isMobileImmersiveLayout]);
 
   useEffect(() => {
-    if (!isImageFullscreen) return;
-    const prevOverflow = document.body.style.overflow;
+    if (!isImageFullscreen || !isMobileImmersiveLayout) return;
+    const prevBody = document.body.style.overflow;
+    const prevHtml = document.documentElement.style.overflow;
     document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = prevOverflow;
+      document.body.style.overflow = prevBody;
+      document.documentElement.style.overflow = prevHtml;
     };
-  }, [isImageFullscreen]);
+  }, [isImageFullscreen, isMobileImmersiveLayout]);
+
+  /** After route delivers the new asset, drop crossfade layers. */
+  useEffect(() => {
+    if (!xfIncoming) return;
+    if (asset.previewImageUrl !== xfIncoming.url) return;
+    setXfIncoming(null);
+    setXfActive(false);
+    setFsNavPending(false);
+    if (fullscreenNavTimerRef.current) {
+      clearTimeout(fullscreenNavTimerRef.current);
+      fullscreenNavTimerRef.current = null;
+    }
+  }, [asset.previewImageUrl, xfIncoming]);
+
+  /** Preload neighbor previews while immersive fullscreen (smoother crossfade). */
+  useEffect(() => {
+    if (!isImageFullscreen || !isMobileImmersiveLayout) return;
+    const idx = CASA_MIRADOR_ASSETS.findIndex((a) => a.id === activeId);
+    if (idx < 0) return;
+    const urls = [CASA_MIRADOR_ASSETS[idx - 1]?.previewImageUrl, CASA_MIRADOR_ASSETS[idx + 1]?.previewImageUrl].filter(
+      Boolean,
+    ) as string[];
+    if (urls.length === 0) return;
+    const links: HTMLLinkElement[] = [];
+    for (const u of urls) {
+      const link = document.createElement("link");
+      link.rel = "preload";
+      link.as = "image";
+      link.href = u;
+      document.head.appendChild(link);
+      links.push(link);
+    }
+    return () => {
+      for (const link of links) {
+        link.remove();
+      }
+    };
+  }, [activeId, isImageFullscreen, isMobileImmersiveLayout]);
 
   useEffect(() => {
-    if (!isImageFullscreen) return;
+    return () => {
+      if (fullscreenNavTimerRef.current) {
+        clearTimeout(fullscreenNavTimerRef.current);
+        fullscreenNavTimerRef.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const idx = CASA_MIRADOR_ASSETS.findIndex((a) => a.id === activeId);
+    if (idx > 0) {
+      const id = CASA_MIRADOR_ASSETS[idx - 1]?.id;
+      if (id) router.prefetch(`/projects/casa-mirador/files/${id}`);
+    }
+    if (idx >= 0 && idx < CASA_MIRADOR_ASSETS.length - 1) {
+      const id = CASA_MIRADOR_ASSETS[idx + 1]?.id;
+      if (id) router.prefetch(`/projects/casa-mirador/files/${id}`);
+    }
+  }, [activeId, router]);
+
+  useEffect(() => {
+    if (!isImageFullscreen || !isMobileImmersiveLayout) return;
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
@@ -315,11 +471,21 @@ export default function MobileCasaMiradorFileViewer() {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isImageFullscreen]);
+  }, [isImageFullscreen, isMobileImmersiveLayout]);
 
   const toggleAccordion = (key: AccordionId) => {
     setAccordionOpen((prev) => ({ ...prev, [key]: !prev[key] }));
   };
+
+  const carouselIdx = Math.max(0, CASA_MIRADOR_ASSETS.findIndex((a) => a.id === activeId));
+  const prevFullscreenAsset =
+    carouselIdx > 0 ? CASA_MIRADOR_ASSETS[carouselIdx - 1] ?? null : null;
+  const nextFullscreenAsset =
+    carouselIdx >= 0 && carouselIdx < CASA_MIRADOR_ASSETS.length - 1
+      ? CASA_MIRADOR_ASSETS[carouselIdx + 1] ?? null
+      : null;
+
+  const fullscreenHeaderLabel = xfIncoming ? xfIncoming.alt : asset.title;
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: MOBILE_PAGE_BG }}>
@@ -623,7 +789,7 @@ export default function MobileCasaMiradorFileViewer() {
 
       <MobileBottomArea />
 
-      {fullscreenPortalReady && isImageFullscreen
+      {fullscreenPortalReady && isMobileImmersiveLayout && isImageFullscreen
         ? createPortal(
             <div
               className="fixed inset-0 z-[200] flex flex-col bg-[#0a0a0a]"
@@ -635,14 +801,15 @@ export default function MobileCasaMiradorFileViewer() {
               }}
               role="dialog"
               aria-modal="true"
-              aria-label={`Full screen preview: ${asset.title}`}
+              aria-busy={fsNavPending}
+              aria-label={`Full screen preview: ${fullscreenHeaderLabel}`}
             >
               <div className="flex shrink-0 items-center gap-3 border-b border-white/10 px-4 pb-3 pt-[max(12px,env(safe-area-inset-top,0px))]">
                 <p
                   className="min-w-0 flex-1 truncate text-left text-sm font-medium leading-5 text-white/95"
                   style={{ fontFamily: "var(--ar-font-family-body)" }}
                 >
-                  {asset.title}
+                  {fullscreenHeaderLabel}
                 </p>
                 <button
                   type="button"
@@ -656,64 +823,136 @@ export default function MobileCasaMiradorFileViewer() {
                 </button>
               </div>
 
-              <div
-                className="relative isolate z-0 min-h-0 w-full flex-1 cursor-grab touch-manipulation select-none active:cursor-grabbing"
-                onPointerDown={(e) => {
-                  if (e.pointerType === "mouse" && e.button !== 0) return;
-                  fullscreenSwipeRef.current = {
-                    x: e.clientX,
-                    y: e.clientY,
-                    pointerId: e.pointerId,
-                  };
-                  (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-                }}
-                onPointerUp={(e) => {
-                  const start = fullscreenSwipeRef.current;
-                  if (!start || e.pointerId !== start.pointerId) return;
-                  fullscreenSwipeRef.current = null;
-                  try {
-                    const el = e.currentTarget as HTMLElement;
-                    if (el.hasPointerCapture?.(e.pointerId)) {
-                      el.releasePointerCapture(e.pointerId);
+              <div className="relative isolate min-h-0 w-full flex-1">
+                <div
+                  className={`relative z-0 h-full min-h-[200px] w-full touch-manipulation select-none ${
+                    fsNavPending ? "cursor-default" : "cursor-grab active:cursor-grabbing"
+                  }`}
+                  onPointerDown={(e) => {
+                    if (fsNavPending) return;
+                    if (e.pointerType === "mouse" && e.button !== 0) return;
+                    fullscreenSwipeRef.current = {
+                      x: e.clientX,
+                      y: e.clientY,
+                      pointerId: e.pointerId,
+                    };
+                    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+                  }}
+                  onPointerUp={(e) => {
+                    const start = fullscreenSwipeRef.current;
+                    if (!start || e.pointerId !== start.pointerId) return;
+                    fullscreenSwipeRef.current = null;
+                    try {
+                      const el = e.currentTarget as HTMLElement;
+                      if (el.hasPointerCapture?.(e.pointerId)) {
+                        el.releasePointerCapture(e.pointerId);
+                      }
+                    } catch {
+                      /* release failed */
                     }
-                  } catch {
-                    /* release failed */
-                  }
-                  const dx = e.clientX - start.x;
-                  const dy = e.clientY - start.y;
-                  const minDx = 56;
-                  if (Math.abs(dx) < minDx) return;
-                  if (Math.abs(dx) < Math.abs(dy) * 1.15) return;
-                  if (dx < 0) {
-                    navigateFullscreenAsset("next");
-                  } else {
-                    navigateFullscreenAsset("prev");
-                  }
-                }}
-                onPointerCancel={(e) => {
-                  const start = fullscreenSwipeRef.current;
-                  if (!start || e.pointerId !== start.pointerId) return;
-                  fullscreenSwipeRef.current = null;
-                  try {
-                    const el = e.currentTarget as HTMLElement;
-                    if (el.hasPointerCapture?.(e.pointerId)) {
-                      el.releasePointerCapture(e.pointerId);
+                    const dx = e.clientX - start.x;
+                    const dy = e.clientY - start.y;
+                    const minDx = 56;
+                    if (Math.abs(dx) < minDx) return;
+                    if (Math.abs(dx) < Math.abs(dy) * 1.15) return;
+                    if (dx < 0) {
+                      navigateFullscreen("next");
+                    } else {
+                      navigateFullscreen("prev");
                     }
-                  } catch {
-                    /* ignore */
-                  }
-                }}
-              >
-                <Image
-                  alt={asset.title}
-                  src={asset.previewImageUrl}
-                  fill
-                  className="pointer-events-none select-none object-contain"
-                  sizes="100vw"
-                  unoptimized
-                  draggable={false}
-                  priority
-                />
+                  }}
+                  onPointerCancel={(e) => {
+                    const start = fullscreenSwipeRef.current;
+                    if (!start || e.pointerId !== start.pointerId) return;
+                    fullscreenSwipeRef.current = null;
+                    try {
+                      const el = e.currentTarget as HTMLElement;
+                      if (el.hasPointerCapture?.(e.pointerId)) {
+                        el.releasePointerCapture(e.pointerId);
+                      }
+                    } catch {
+                      /* ignore */
+                    }
+                  }}
+                >
+                  {!xfIncoming ? (
+                    <Image
+                      key={asset.previewImageUrl}
+                      alt={asset.title}
+                      src={asset.previewImageUrl}
+                      fill
+                      className="pointer-events-none select-none object-contain"
+                      sizes="100vw"
+                      unoptimized
+                      draggable={false}
+                      priority
+                    />
+                  ) : (
+                    <>
+                      <div
+                        className={`pointer-events-none absolute inset-0 transition-opacity duration-300 ease-out ${
+                          xfActive ? "opacity-0" : "opacity-100"
+                        }`}
+                      >
+                        <Image
+                          alt={asset.title}
+                          src={asset.previewImageUrl}
+                          fill
+                          className="select-none object-contain"
+                          sizes="100vw"
+                          unoptimized
+                          draggable={false}
+                          priority
+                        />
+                      </div>
+                      <div
+                        className={`pointer-events-none absolute inset-0 transition-opacity duration-300 ease-out ${
+                          xfActive ? "opacity-100" : "opacity-0"
+                        }`}
+                      >
+                        <Image
+                          alt={xfIncoming.alt}
+                          src={xfIncoming.url}
+                          fill
+                          className="select-none object-contain"
+                          sizes="100vw"
+                          unoptimized
+                          draggable={false}
+                          priority
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {prevFullscreenAsset ? (
+                  <button
+                    type="button"
+                    disabled={fsNavPending}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigateFullscreen("prev");
+                    }}
+                    className="pointer-events-auto absolute left-3 top-1/2 z-20 flex h-14 w-14 -translate-y-1/2 touch-manipulation items-center justify-center rounded-full border border-white/20 bg-black/40 text-white shadow-lg backdrop-blur-sm transition hover:bg-black/55 disabled:pointer-events-none disabled:opacity-35 min-[380px]:left-6 min-[380px]:h-16 min-[380px]:w-16"
+                    aria-label="Previous file"
+                  >
+                    <IconChevronLeftLarge className="text-white" />
+                  </button>
+                ) : null}
+                {nextFullscreenAsset ? (
+                  <button
+                    type="button"
+                    disabled={fsNavPending}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigateFullscreen("next");
+                    }}
+                    className="pointer-events-auto absolute right-3 top-1/2 z-20 flex h-14 w-14 -translate-y-1/2 touch-manipulation items-center justify-center rounded-full border border-white/20 bg-black/40 text-white shadow-lg backdrop-blur-sm transition hover:bg-black/55 disabled:pointer-events-none disabled:opacity-35 min-[380px]:right-6 min-[380px]:h-16 min-[380px]:w-16"
+                    aria-label="Next file"
+                  >
+                    <IconChevronRightLarge className="text-white" />
+                  </button>
+                ) : null}
               </div>
 
               <p

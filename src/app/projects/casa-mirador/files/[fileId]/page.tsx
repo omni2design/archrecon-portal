@@ -184,6 +184,14 @@ export default async function CasaMiradorFileViewerPage({
               alt={asset.title}
               previousHref={previousAsset ? `/projects/casa-mirador/files/${previousAsset.id}` : null}
               nextHref={nextAsset ? `/projects/casa-mirador/files/${nextAsset.id}` : null}
+              previousPreview={
+                previousAsset
+                  ? { imageUrl: previousAsset.previewImageUrl, title: previousAsset.title }
+                  : null
+              }
+              nextPreview={
+                nextAsset ? { imageUrl: nextAsset.previewImageUrl, title: nextAsset.title } : null
+              }
             />
           </div>
         </div>

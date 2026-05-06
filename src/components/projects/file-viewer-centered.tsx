@@ -4,7 +4,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 
 function IconZoomOut({ className }: { className?: string }) {
   return (
@@ -101,11 +108,25 @@ function IconChevronRightLarge({ className }: { className?: string }) {
 /** Keeps immersive fullscreen open across `router.replace` when changing files (avoids state reset on remount). */
 const FILE_VIEWER_IMMERSIVE_FS_KEY = "ar-file-viewer-immersive-fs";
 
+/** Aligns with Tailwind `duration-300` — fullscreen crossfade + delayed `router.replace`. */
+const FULLSCREEN_CROSSFADE_MS = 300;
+
+/** Tailwind `lg` — immersive fullscreen from this component only on desktop (`hidden lg:block` shell). */
+const DESKTOP_LAYOUT_MEDIA = "(min-width: 1024px)";
+
+export type FileViewerNeighborPreview = {
+  imageUrl: string;
+  title: string;
+};
+
 type FileViewerCenteredProps = {
   imageUrl: string;
   alt: string;
   previousHref?: string | null;
   nextHref?: string | null;
+  /** When set, fullscreen prev/next can crossfade instead of waiting on navigation alone. */
+  previousPreview?: FileViewerNeighborPreview | null;
+  nextPreview?: FileViewerNeighborPreview | null;
 };
 
 export default function FileViewerCentered({
@@ -113,12 +134,34 @@ export default function FileViewerCentered({
   alt,
   previousHref,
   nextHref,
+  previousPreview,
+  nextPreview,
 }: FileViewerCenteredProps) {
   const router = useRouter();
   const [zoom, setZoom] = useState(100);
-  const [isImageFullscreen, setIsImageFullscreen] = useState(false);
+  /** Desktop-only: mobile uses `MobileCasaMiradorFileViewer`; both mount so gate portal + storage restore on `lg`. */
+  const [isLgLayout, setIsLgLayout] = useState(() =>
+    typeof window !== "undefined"
+      ? window.matchMedia(DESKTOP_LAYOUT_MEDIA).matches
+      : false,
+  );
+  const [isImageFullscreen, setIsImageFullscreen] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      if (!window.matchMedia(DESKTOP_LAYOUT_MEDIA).matches) return false;
+      return sessionStorage.getItem(FILE_VIEWER_IMMERSIVE_FS_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
   const [fullscreenPortalReady, setFullscreenPortalReady] = useState(false);
   const fullscreenSwipeRef = useRef<{ x: number; y: number; pointerId: number } | null>(null);
+
+  /** Incoming slide for fullscreen crossfade (neighbor URLs known client-side). */
+  const [xfIncoming, setXfIncoming] = useState<{ url: string; alt: string } | null>(null);
+  const [xfActive, setXfActive] = useState(false);
+  const [fsNavPending, setFsNavPending] = useState(false);
+  const fullscreenNavTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const zoomOut = useCallback(() => setZoom((z) => Math.max(50, z - 25)), []);
   const zoomIn = useCallback(() => setZoom((z) => Math.min(150, z + 25)), []);
@@ -140,42 +183,156 @@ export default function FileViewerCentered({
       /* storage blocked */
     }
     setIsImageFullscreen(false);
+    setXfIncoming(null);
+    setXfActive(false);
+    setFsNavPending(false);
+    if (fullscreenNavTimerRef.current) {
+      clearTimeout(fullscreenNavTimerRef.current);
+      fullscreenNavTimerRef.current = null;
+    }
   }, []);
 
-  const goNext = useCallback(() => {
-    if (nextHref) router.replace(nextHref);
-  }, [nextHref, router]);
+  const navigateFile = useCallback(
+    (direction: "next" | "prev") => {
+      const href = direction === "next" ? nextHref : previousHref;
+      const preview = direction === "next" ? nextPreview : previousPreview;
+      if (!href) return;
+      if (fsNavPending) return;
 
-  const goPrev = useCallback(() => {
-    if (previousHref) router.replace(previousHref);
-  }, [previousHref, router]);
+      const instantReplace = () => {
+        startTransition(() => {
+          router.replace(href, { scroll: false });
+        });
+      };
+
+      const reducedMotion =
+        typeof window !== "undefined" &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      if (!isImageFullscreen || !isLgLayout || reducedMotion || !preview?.imageUrl) {
+        instantReplace();
+        return;
+      }
+
+      setFsNavPending(true);
+      setXfIncoming({ url: preview.imageUrl, alt: preview.title });
+      setXfActive(false);
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setXfActive(true);
+        });
+      });
+
+      if (fullscreenNavTimerRef.current) clearTimeout(fullscreenNavTimerRef.current);
+      fullscreenNavTimerRef.current = setTimeout(() => {
+        fullscreenNavTimerRef.current = null;
+        instantReplace();
+      }, FULLSCREEN_CROSSFADE_MS);
+    },
+    [
+      fsNavPending,
+      isImageFullscreen,
+      isLgLayout,
+      nextHref,
+      nextPreview,
+      previousHref,
+      previousPreview,
+      router,
+    ],
+  );
+
+  const goNext = useCallback(() => navigateFile("next"), [navigateFile]);
+
+  const goPrev = useCallback(() => navigateFile("prev"), [navigateFile]);
+
+  useLayoutEffect(() => {
+    const mq = window.matchMedia(DESKTOP_LAYOUT_MEDIA);
+    const sync = () => setIsLgLayout(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  /** Leaving desktop breakpoint drops immersive UI state here (does not clear sessionStorage — mobile may own it). */
+  useLayoutEffect(() => {
+    if (isLgLayout) return;
+    setIsImageFullscreen(false);
+    setXfIncoming(null);
+    setXfActive(false);
+    setFsNavPending(false);
+    if (fullscreenNavTimerRef.current) {
+      clearTimeout(fullscreenNavTimerRef.current);
+      fullscreenNavTimerRef.current = null;
+    }
+  }, [isLgLayout]);
 
   useEffect(() => {
     setFullscreenPortalReady(true);
   }, []);
 
-  useLayoutEffect(() => {
-    if (!fullscreenPortalReady) return;
-    try {
-      if (sessionStorage.getItem(FILE_VIEWER_IMMERSIVE_FS_KEY) === "1") {
-        setIsImageFullscreen(true);
-      }
-    } catch {
-      /* storage blocked */
+  useEffect(() => {
+    if (previousHref) router.prefetch(previousHref);
+    if (nextHref) router.prefetch(nextHref);
+  }, [nextHref, previousHref, router]);
+
+  /** After RSC delivers the new file, drop crossfade layers so a single image tracks `imageUrl`. */
+  useEffect(() => {
+    if (!xfIncoming) return;
+    if (imageUrl !== xfIncoming.url) return;
+    setXfIncoming(null);
+    setXfActive(false);
+    setFsNavPending(false);
+    if (fullscreenNavTimerRef.current) {
+      clearTimeout(fullscreenNavTimerRef.current);
+      fullscreenNavTimerRef.current = null;
     }
-  }, [fullscreenPortalReady, imageUrl]);
+  }, [imageUrl, xfIncoming]);
 
+  /** Warm caches for neighbor previews while fullscreen (smoother first crossfade). */
   useEffect(() => {
-    if (!isImageFullscreen) return;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    if (!isImageFullscreen || !isLgLayout) return;
+    const urls = [previousPreview?.imageUrl, nextPreview?.imageUrl].filter(Boolean) as string[];
+    if (urls.length === 0) return;
+    const links: HTMLLinkElement[] = [];
+    for (const u of urls) {
+      const link = document.createElement("link");
+      link.rel = "preload";
+      link.as = "image";
+      link.href = u;
+      document.head.appendChild(link);
+      links.push(link);
+    }
     return () => {
-      document.body.style.overflow = prevOverflow;
+      for (const link of links) {
+        link.remove();
+      }
     };
-  }, [isImageFullscreen]);
+  }, [isImageFullscreen, isLgLayout, nextPreview?.imageUrl, previousPreview?.imageUrl]);
 
   useEffect(() => {
-    if (!isImageFullscreen) return;
+    if (!isImageFullscreen || !isLgLayout) return;
+    const prevBody = document.body.style.overflow;
+    const prevHtml = document.documentElement.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevBody;
+      document.documentElement.style.overflow = prevHtml;
+    };
+  }, [isImageFullscreen, isLgLayout]);
+
+  useEffect(() => {
+    return () => {
+      if (fullscreenNavTimerRef.current) {
+        clearTimeout(fullscreenNavTimerRef.current);
+        fullscreenNavTimerRef.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isImageFullscreen || !isLgLayout) return;
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
@@ -195,13 +352,15 @@ export default function FileViewerCentered({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isImageFullscreen, closeImageFullscreen, goNext, goPrev]);
+  }, [isImageFullscreen, isLgLayout, closeImageFullscreen, goNext, goPrev]);
 
   const navBase =
     "flex w-[95px] items-center justify-center gap-2 rounded-[10px] border border-black/50 bg-white px-4 py-2 text-sm font-medium leading-5 text-[#00162d]";
 
   const overlayHint =
     "Drag or use arrow keys for other files · Esc to close";
+
+  const fullscreenHeaderLabel = xfIncoming ? xfIncoming.alt : alt;
 
   return (
     <div className="flex w-full flex-col items-center gap-6">
@@ -284,7 +443,7 @@ export default function FileViewerCentered({
         )}
       </div>
 
-      {fullscreenPortalReady && isImageFullscreen
+      {fullscreenPortalReady && isLgLayout && isImageFullscreen
         ? createPortal(
             <div
               className="fixed inset-0 z-[200] flex flex-col bg-[#0a0a0a]"
@@ -296,14 +455,15 @@ export default function FileViewerCentered({
               }}
               role="dialog"
               aria-modal="true"
-              aria-label={`Full screen preview: ${alt}`}
+              aria-busy={fsNavPending}
+              aria-label={`Full screen preview: ${fullscreenHeaderLabel}`}
             >
               <div className="flex shrink-0 items-center gap-3 border-b border-white/10 px-6 pb-3 pt-[max(16px,env(safe-area-inset-top,0px))]">
                 <p
                   className="min-w-0 flex-1 truncate text-left text-base font-medium leading-6 text-white/95"
                   style={{ fontFamily: "var(--ar-font-family-body)" }}
                 >
-                  {alt}
+                  {fullscreenHeaderLabel}
                 </p>
                 <button
                   type="button"
@@ -320,8 +480,11 @@ export default function FileViewerCentered({
               <div className="relative isolate min-h-0 w-full flex-1">
                 {/* Swipe layer first + z-0 so side nav buttons (stacked above) receive clicks */}
                 <div
-                  className="relative z-0 h-full min-h-[200px] w-full cursor-grab touch-manipulation select-none active:cursor-grabbing"
+                  className={`relative z-0 h-full min-h-[200px] w-full touch-manipulation select-none ${
+                    fsNavPending ? "cursor-default" : "cursor-grab active:cursor-grabbing"
+                  }`}
                   onPointerDown={(e) => {
+                    if (fsNavPending) return;
                     if (e.pointerType === "mouse" && e.button !== 0) return;
                     fullscreenSwipeRef.current = {
                       x: e.clientX,
@@ -367,26 +530,65 @@ export default function FileViewerCentered({
                     }
                   }}
                 >
-                  <Image
-                    alt={alt}
-                    src={imageUrl}
-                    fill
-                    className="pointer-events-none select-none object-contain"
-                    sizes="100vw"
-                    unoptimized
-                    draggable={false}
-                    priority
-                  />
+                  {!xfIncoming ? (
+                    <Image
+                      key={imageUrl}
+                      alt={alt}
+                      src={imageUrl}
+                      fill
+                      className="pointer-events-none select-none object-contain"
+                      sizes="100vw"
+                      unoptimized
+                      draggable={false}
+                      priority
+                    />
+                  ) : (
+                    <>
+                      <div
+                        className={`pointer-events-none absolute inset-0 transition-opacity duration-300 ease-out ${
+                          xfActive ? "opacity-0" : "opacity-100"
+                        }`}
+                      >
+                        <Image
+                          alt={alt}
+                          src={imageUrl}
+                          fill
+                          className="select-none object-contain"
+                          sizes="100vw"
+                          unoptimized
+                          draggable={false}
+                          priority
+                        />
+                      </div>
+                      <div
+                        className={`pointer-events-none absolute inset-0 transition-opacity duration-300 ease-out ${
+                          xfActive ? "opacity-100" : "opacity-0"
+                        }`}
+                      >
+                        <Image
+                          alt={xfIncoming.alt}
+                          src={xfIncoming.url}
+                          fill
+                          className="select-none object-contain"
+                          sizes="100vw"
+                          unoptimized
+                          draggable={false}
+                          priority
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {previousHref ? (
                   <button
                     type="button"
+                    disabled={fsNavPending}
                     onClick={(e) => {
                       e.stopPropagation();
                       goPrev();
                     }}
-                    className="pointer-events-auto absolute left-4 top-1/2 z-20 flex h-14 w-14 -translate-y-1/2 touch-manipulation items-center justify-center rounded-full border border-white/20 bg-black/40 text-white shadow-lg backdrop-blur-sm transition hover:bg-black/55 md:left-8 md:h-16 md:w-16"
+                    className="pointer-events-auto absolute left-4 top-1/2 z-20 flex h-14 w-14 -translate-y-1/2 touch-manipulation items-center justify-center rounded-full border border-white/20 bg-black/40 text-white shadow-lg backdrop-blur-sm transition hover:bg-black/55 disabled:pointer-events-none disabled:opacity-35 md:left-8 md:h-16 md:w-16"
                     aria-label="Previous file"
                   >
                     <IconChevronLeftLarge className="text-white" />
@@ -395,11 +597,12 @@ export default function FileViewerCentered({
                 {nextHref ? (
                   <button
                     type="button"
+                    disabled={fsNavPending}
                     onClick={(e) => {
                       e.stopPropagation();
                       goNext();
                     }}
-                    className="pointer-events-auto absolute right-4 top-1/2 z-20 flex h-14 w-14 -translate-y-1/2 touch-manipulation items-center justify-center rounded-full border border-white/20 bg-black/40 text-white shadow-lg backdrop-blur-sm transition hover:bg-black/55 md:right-8 md:h-16 md:w-16"
+                    className="pointer-events-auto absolute right-4 top-1/2 z-20 flex h-14 w-14 -translate-y-1/2 touch-manipulation items-center justify-center rounded-full border border-white/20 bg-black/40 text-white shadow-lg backdrop-blur-sm transition hover:bg-black/55 disabled:pointer-events-none disabled:opacity-35 md:right-8 md:h-16 md:w-16"
                     aria-label="Next file"
                   >
                     <IconChevronRightLarge className="text-white" />
